@@ -1,6 +1,8 @@
 package com.nasa.bt.server.cls;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 数据包类
@@ -82,13 +84,26 @@ public class Datagram {
         this.params = params;
     }
 
+    /**
+     * 获取参数 把所有参数值视为字符串
+     * @return 参数
+     */
+    public Map<String,String> getParamsAsString(){
+        Map<String,String> result=new HashMap<>();
+        Set<String> keys=params.keySet();
+        for(String key:keys){
+            result.put(key,new String(params.get(key)));
+        }
+        return result;
+    }
+
     @Override
     public String toString() {
         return "Datagram{" +
                 "identifier='" + identifier + '\'' +
                 ", verCode=" + verCode +
                 ", time=" + time +
-                ", params=" + params +
+                ", params=" + getParamsAsString() +
                 '}';
     }
 }

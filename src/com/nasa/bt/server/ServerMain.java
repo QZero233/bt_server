@@ -1,11 +1,14 @@
 package com.nasa.bt.server;
 
+import com.nasa.bt.server.server.ServerManager;
+
 /**
  * 服务器运行类
  * @author QZero
  */
 public class ServerMain {
     public static void main(String[] args) {
+
         /**
          * BT服务器开发步骤
          * 1.打开Intellij IDEA，新建项目
@@ -15,6 +18,6 @@ public class ServerMain {
          * 5.IDEA 关闭 bilibili 启动
          */
 
-
+        ServerManager manager=ServerManager.getInstance();
     }
 }

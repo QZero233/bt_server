@@ -29,7 +29,7 @@ public class CryptModuleFactory {
     /**
      * 生产加密模块
      * @param name 模块名（以本类中的常量为准，忽略大小写）
-     * @return 加密模块
+     * @return 加密模块，不存在则返回null
      */
     public static CryptModule getCryptModule(String name){
 

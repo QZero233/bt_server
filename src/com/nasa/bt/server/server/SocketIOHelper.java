@@ -103,7 +103,7 @@ public class SocketIOHelper {
                     //读取参数内容，循环读取直到读完
                     ByteArrayOutputStream tmpStream=new ByteArrayOutputStream(paramLength);
                     while(tmpStream.size()<paramLength){
-                        byte[] tmpBuf=new byte[1024];
+                        byte[] tmpBuf=new byte[paramLength];
                         int len=is.read(tmpBuf);
                         tmpStream.write(tmpBuf,0,len);
                     }
@@ -116,6 +116,7 @@ public class SocketIOHelper {
                 Datagram datagram=new Datagram(identifier,verCode,byteArrayToLong(timeBuf),params);
                 return datagram;
             }catch (Exception e) {
+                e.printStackTrace();
                 throw new RuntimeException("读取输入流错误，断开连接");
                 //一旦发生读取错误就断开与客户端的连接
             }
@@ -156,6 +157,7 @@ public class SocketIOHelper {
                 }
                 return true;
             }catch (Exception e){
+                e.printStackTrace();
                 return false;
             }
         }
