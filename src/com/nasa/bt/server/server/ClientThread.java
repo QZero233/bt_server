@@ -41,6 +41,12 @@ public class ClientThread extends Thread {
             try {
                 Datagram datagram=helper.readIs();
                 String identifier=datagram.getIdentifier();
+
+                if(user==null && !identifier.equalsIgnoreCase(DataProcessorFactory.IDENTIFIER_SIGN_IN)){
+                    reportActionStatus(false,identifier,"在未登录前不能进行其他操作",null);
+                    continue;
+                }
+
                 DataProcessor processor= DataProcessorFactory.getProcessor(identifier);
                 if(processor==null){
                     System.err.println("收到了未知的数据包 "+datagram);
@@ -53,6 +59,9 @@ public class ClientThread extends Thread {
                 break;
             }
         }
+
+        if(user!=null)
+            parent.removeClient(user.getId());
     }
 
     public void reportActionStatus(boolean status,String identifier,String more,String replyId){

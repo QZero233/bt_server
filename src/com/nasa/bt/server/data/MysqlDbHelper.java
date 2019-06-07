@@ -16,6 +16,7 @@ public class MysqlDbHelper {
 
     public static final String USERS_TAB_NAME = "bt_users";
     public static final String SID_TAB_NAME = "bt_sid";
+    public static final String MSG_TAB_NAME = "tempMessage";
 
     private MysqlDbHelper(){
         try{

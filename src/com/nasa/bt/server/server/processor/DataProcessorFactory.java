@@ -8,6 +8,13 @@ public class DataProcessorFactory {
 
     public static final String IDENTIFIER_SIGN_IN="SIIN";
     public static final String IDENTIFIER_REPORT="REPO";
+    public static final String IDENTIFIER_SEND_MESSAGE ="MESG";
+    public static final String IDENTIFIER_GET_MESSAGE_INDEX="MEGI";
+    public static final String IDENTIFIER_GET_MESSAGE_DETAIL="MEGD";
+    public static final String IDENTIFIER_DELETE_MESSAGE="MEDE";
+
+    public static final String IDENTIFIER_RETURN_MESSAGE_INDEX="MERI";
+    public static final String IDENTIFIER_RETURN_MESSAGE_DETAIL="MERD";
 
     /**
      * 根据标识符获取处理器
@@ -17,6 +24,12 @@ public class DataProcessorFactory {
     public static DataProcessor getProcessor(String identifier){
         if(identifier.equalsIgnoreCase(IDENTIFIER_SIGN_IN))
             return new SignInProcessor();
+        else if(identifier.equalsIgnoreCase(IDENTIFIER_SEND_MESSAGE))
+            return new SendMessageProcessor();
+        else if(identifier.equalsIgnoreCase(IDENTIFIER_GET_MESSAGE_INDEX) || identifier.equalsIgnoreCase(IDENTIFIER_GET_MESSAGE_DETAIL))
+            return new GetMessageProcessor();
+        else if(identifier.equalsIgnoreCase(IDENTIFIER_DELETE_MESSAGE))
+            return new DeleteMessageProcessor();
 
         return null;
     }

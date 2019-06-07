@@ -2,31 +2,19 @@ package com.nasa.bt.server.test;
 
 import com.nasa.bt.server.cls.Datagram;
 import com.nasa.bt.server.server.SocketIOHelper;
+import org.junit.Test;
 
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
 public class LoginTest {
-
-    public static void main(String[] args) throws Exception {
-        test();
-    }
-
-
-    public static void test() throws Exception{
-        Map<String,byte[]> loginParams=new HashMap<>();
-
-        loginParams.put("use_sid","no".getBytes());
-        loginParams.put("username","qzero".getBytes());
-        loginParams.put("code_hash","hash".getBytes());
-
-        Datagram datagram=new Datagram("SIIN",loginParams);
-
+    @Test
+    public void test() throws Exception{
         Socket socket=new Socket("127.0.0.1",8848);
         SocketIOHelper helper=new SocketIOHelper(socket.getInputStream(),socket.getOutputStream());
 
-        Thread.sleep(1000);
+        TestUtils.doLogin(helper);
 
         new Thread(){
             @Override
@@ -38,13 +26,10 @@ public class LoginTest {
 
             }
         }.start();
-
-        helper.writeOs(datagram);
-        //Thread.sleep(1000);
+        Thread.sleep(5000);
 
 
         //while (true);
-
     }
 
 }

@@ -50,7 +50,7 @@ public class SocketIOHelper {
      * @param buf byte数组
      * @return long数据
      */
-    private long byteArrayToLong(byte[] buf){
+    public static long byteArrayToLong(byte[] buf){
         ByteBuffer buffer=ByteBuffer.wrap(buf);
         return buffer.getLong();
     }
@@ -60,7 +60,7 @@ public class SocketIOHelper {
      * @param l long数据
      * @return byte数组
      */
-    private byte[] longToByteArray(long l){
+    public static byte[] longToByteArray(long l){
         ByteBuffer buffer=ByteBuffer.allocate(8);
         buffer.putLong(l);
         return buffer.array();
@@ -86,7 +86,7 @@ public class SocketIOHelper {
                 is.read(timeBuf);
 
                 //读取参数数量
-                int paramsCount=is.read();
+                int paramsCount=is.read();//FIXME 在无参数时，会堵塞在此处，目前的解决方案是没参数就加个参数
                 Map<String,byte[]> params=new HashMap<>();
 
                 //读取具体参数
@@ -116,7 +116,7 @@ public class SocketIOHelper {
                 Datagram datagram=new Datagram(identifier,verCode,byteArrayToLong(timeBuf),params);
                 return datagram;
             }catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
                 throw new RuntimeException("读取输入流错误，断开连接");
                 //一旦发生读取错误就断开与客户端的连接
             }
@@ -143,7 +143,10 @@ public class SocketIOHelper {
                 os.write(longToByteArray(datagram.getTime()));
 
                 Map<String,byte[]> params=datagram.getParams();
-                os.write(params.size());
+                if(params.isEmpty())
+                    os.write(0);
+                else
+                    os.write(params.size());
 
                 Set<String> keys=params.keySet();
                 for(String key:keys){
@@ -157,7 +160,7 @@ public class SocketIOHelper {
                 }
                 return true;
             }catch (Exception e){
-                e.printStackTrace();
+                //e.printStackTrace();
                 return false;
             }
         }

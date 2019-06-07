@@ -92,6 +92,15 @@ public class ServerManager {
         }.start();
     }
 
+
+    public void addClient(ClientThread thread,String uid){
+        clients.put(uid,thread);
+    }
+
+    public void removeClient(String uid){
+        clients.remove(uid);
+    }
+
     public static ServerManager getInstance(){
         if(instance==null)
             instance=new ServerManager();

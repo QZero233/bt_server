@@ -50,6 +50,12 @@ public class Datagram {
         this.params = params;
         this.verCode=CURRENT_VER_CODE;
         this.time=System.currentTimeMillis();
+
+        //FIXME 这一堆今后肯定得改的
+        if(params==null)
+            this.params=new HashMap<>();
+        if(this.params.isEmpty())
+            this.params.put("a","a".getBytes());
     }
 
     public String getIdentifier() {

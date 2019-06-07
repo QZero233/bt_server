@@ -17,6 +17,7 @@ public class SignInProcessor implements DataProcessor{
 
     private void onSuccess(ClientThread thread,String more){
         thread.reportActionStatus(true,DataProcessorFactory.IDENTIFIER_SIGN_IN,more,null);
+        thread.parent.addClient(thread,thread.user.getId());
         System.out.println("处理用户登录成功 "+more);
     }
 
