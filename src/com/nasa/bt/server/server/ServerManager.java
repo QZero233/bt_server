@@ -1,6 +1,9 @@
 package com.nasa.bt.server.server;
 
+import com.nasa.bt.server.cls.Datagram;
 import com.nasa.bt.server.data.MysqlDbHelper;
+import com.nasa.bt.server.data.ServerDataUtils;
+import com.nasa.bt.server.server.processor.DataProcessorFactory;
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -95,6 +98,7 @@ public class ServerManager {
 
     public void addClient(ClientThread thread,String uid){
         clients.put(uid,thread);
+        remind(uid);
     }
 
     public void removeClient(String uid){
@@ -105,6 +109,22 @@ public class ServerManager {
         if(instance==null)
             instance=new ServerManager();
         return instance;
+    }
+
+    public void remind(String uid){
+        if(clients.get(uid)!=null){
+            new Thread(){
+                @Override
+                public void run() {
+                    super.run();
+                    Map<String,byte[]> returnParams=new HashMap<>();
+                    String index= ServerDataUtils.getMessageIndex(clients.get(uid).user.getId());
+                    returnParams.put("index",index.getBytes());
+                    Datagram returnDatagram=new Datagram(DataProcessorFactory.IDENTIFIER_RETURN_MESSAGE_INDEX,returnParams);
+                    clients.get(uid).helper.writeOs(returnDatagram);
+                }
+            }.start();
+        }
     }
 
 

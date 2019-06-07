@@ -1,5 +1,6 @@
 package com.nasa.bt.server.data;
 
+import com.nasa.bt.server.cls.LoginInfo;
 import com.nasa.bt.server.cls.Msg;
 import com.nasa.bt.server.cls.UserInfo;
 import com.nasa.bt.server.utils.UUIDUtils;
@@ -39,14 +40,61 @@ public class ServerDataUtils {
         }
     }
 
+    public static LoginInfo getLoginInfoFromResultSet(ResultSet resultSet){
+        try {
+            if(!resultSet.first())
+                return null;
+
+            String id=resultSet.getString(resultSet.findColumn("id"));
+            String name=resultSet.getString(resultSet.findColumn("name"));
+            String codeHash=resultSet.getString(resultSet.findColumn("codeHash"));
+
+            LoginInfo userInfo=new LoginInfo(id,name,codeHash);
+            return userInfo;
+        }catch (Exception e){
+            System.err.println("在读取结果集并转为用户对象时错误");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     /**
      * 根据uid查找用户信息
      * @param uid uid
      * @return 用户信息对象，失败返回null
      */
-    public static UserInfo getUserByUid(String uid){
+    public static LoginInfo getLoginInfoByUid(String uid){
         try{
-            ResultSet resultSet=helper.execSQLQuery("SELECT * FROM "+MysqlDbHelper.USERS_TAB_NAME+" WHERE id='"+uid+"'");
+            ResultSet resultSet=helper.execSQLQuery("SELECT * FROM "+MysqlDbHelper.USER_LOGIN_INFO_TAB_NAME +" WHERE id='"+uid+"'");
+            return getLoginInfoFromResultSet(resultSet);
+        }catch (Exception e){
+            System.err.println("根据UID查找用户时错误，uid="+uid);
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static LoginInfo getLoginInfoByName(String name){
+        try{
+            ResultSet resultSet=helper.execSQLQuery("SELECT * FROM "+MysqlDbHelper.USER_LOGIN_INFO_TAB_NAME +" WHERE name='"+name+"'");
+            return getLoginInfoFromResultSet(resultSet);
+        }catch (Exception e){
+            System.err.println("根据用户名称查找用户时错误，name="+name);
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+
+    /**
+     * 根据uid查找用户信息
+     * @param uid uid
+     * @return 用户信息对象，失败返回null
+     */
+    public static UserInfo getUserInfoByUid(String uid){
+        try{
+            ResultSet resultSet=helper.execSQLQuery("SELECT * FROM "+MysqlDbHelper.USER_INFO_TAB_NAME +" WHERE id='"+uid+"'");
             return getUserInfoFromResultSet(resultSet);
         }catch (Exception e){
             System.err.println("根据UID查找用户时错误，uid="+uid);
@@ -57,7 +105,7 @@ public class ServerDataUtils {
 
     public static UserInfo getUserInfoByName(String name){
         try{
-            ResultSet resultSet=helper.execSQLQuery("SELECT * FROM "+MysqlDbHelper.USERS_TAB_NAME+" WHERE name='"+name+"'");
+            ResultSet resultSet=helper.execSQLQuery("SELECT * FROM "+MysqlDbHelper.USER_INFO_TAB_NAME +" WHERE name='"+name+"'");
             return getUserInfoFromResultSet(resultSet);
         }catch (Exception e){
             System.err.println("根据用户名称查找用户时错误，name="+name);
@@ -73,15 +121,42 @@ public class ServerDataUtils {
 
             String id=resultSet.getString(resultSet.findColumn("id"));
             String name=resultSet.getString(resultSet.findColumn("name"));
-            String codeHash=resultSet.getString(resultSet.findColumn("codeHash"));
+            String key=resultSet.getString(resultSet.findColumn("pubKey"));
 
-            UserInfo userInfo=new UserInfo(id,name,codeHash);
-            return userInfo;
+
+            return new UserInfo(name,id,key);
         }catch (Exception e){
             System.err.println("在读取结果集并转为用户对象时错误");
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static String getUserIndex(){
+
+        try {
+            String sql="SELECT * FROM "+MysqlDbHelper.USER_INFO_TAB_NAME;
+            ResultSet resultSet=helper.execSQLQuery(sql);
+            if(!resultSet.first())
+                return "";
+
+            String result="";
+            int index=resultSet.findColumn("id");
+            do{
+                result+=resultSet.getString(index);
+            }while (resultSet.next());
+            return result;
+        }catch (Exception e){
+            return "";
+        }
+
+    }
+
+    public static boolean updateUserInfo(String key,String uid){
+        String sql="UPDATE "+MysqlDbHelper.USER_INFO_TAB_NAME+" SET pubKey='"+key+"' WHERE id='"+uid+"'";
+        if(helper.execSQL(sql)>=1)
+            return true;
+        return false;
     }
 
     /**
@@ -216,14 +291,6 @@ public class ServerDataUtils {
         Msg msg=getMessageDetail(msgId);
         if(msg==null)
             return false;
-
-        //标记消息已读
-        if(!msg.getSrcUid().equalsIgnoreCase("system")){
-            Msg msgReadMark=new Msg(UUIDUtils.getRandomUUID(),"system",msg.getSrcUid(),null,System.currentTimeMillis());
-            if(!addMsg(msgReadMark) || !writeLocalMsgContent(msgReadMark.getMsgId(),msgId))
-                return false;
-        }
-
 
         File file=new File(MSG_ROOT_PATH,msgId);
         file.delete();

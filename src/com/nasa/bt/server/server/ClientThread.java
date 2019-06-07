@@ -1,7 +1,7 @@
 package com.nasa.bt.server.server;
 
 import com.nasa.bt.server.cls.Datagram;
-import com.nasa.bt.server.cls.UserInfo;
+import com.nasa.bt.server.cls.LoginInfo;
 import com.nasa.bt.server.server.processor.DataProcessor;
 import com.nasa.bt.server.server.processor.DataProcessorFactory;
 
@@ -19,7 +19,7 @@ public class ClientThread extends Thread {
     public SocketIOHelper helper;
     public ServerManager parent;
 
-    public UserInfo user=new UserInfo(null,null,null);
+    public LoginInfo user=new LoginInfo(null,null,null);
 
     public ClientThread(Socket socket, ServerManager parent) {
         this.socket = socket;
@@ -72,7 +72,7 @@ public class ClientThread extends Thread {
         Map<String,byte[]> params=new HashMap<>();
         params.put("action_status",statusStr.getBytes());
         params.put("action_identifier",identifier.getBytes());
-        params.put("mroe",more.getBytes());
+        params.put("more",more.getBytes());
         if(replyId!=null)
             params.put("reply_id",replyId.getBytes());
 

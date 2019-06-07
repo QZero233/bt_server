@@ -43,5 +43,9 @@ public class IOTest {
 
         Datagram datagram=new Datagram("MDZZ",params);
         helper.writeOs(datagram);
+
+
+        while (true)
+            Thread.sleep(5000);
     }
 }

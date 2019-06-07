@@ -14,13 +14,14 @@ public class MysqlDbHelper {
 
     private static MysqlDbHelper instance;
 
-    public static final String USERS_TAB_NAME = "bt_users";
+    public static final String USER_LOGIN_INFO_TAB_NAME = "bt_user_login_info";
     public static final String SID_TAB_NAME = "bt_sid";
-    public static final String MSG_TAB_NAME = "tempMessage";
+    public static final String MSG_TAB_NAME = "temp_message";
+    public static final String USER_INFO_TAB_NAME = "bt_user_info";
 
     private MysqlDbHelper(){
         try{
-            mConnection = (Connection) DriverManager.getConnection(url, username, password);
+            mConnection =  DriverManager.getConnection(url, username, password);
         }catch (Exception e){
             System.err.println("在打开mysql数据库连接时发生错误");
             e.printStackTrace();

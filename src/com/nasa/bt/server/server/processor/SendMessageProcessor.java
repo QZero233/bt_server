@@ -18,7 +18,7 @@ public class SendMessageProcessor implements DataProcessor {
         String dstUid=params.get("dst_uid");
         String msg_content=params.get("msg_content");
 
-        if(ServerDataUtils.getUserByUid(dstUid)==null){
+        if(ServerDataUtils.getLoginInfoByUid(dstUid)==null){
             System.err.println("发送消息失败-对方id "+dstUid+" 不存在");
             thread.reportActionStatus(false,datagram.getIdentifier(),"对方id不存在",msgId);
             return;
@@ -34,6 +34,7 @@ public class SendMessageProcessor implements DataProcessor {
         if(ServerDataUtils.addMsg(msg)){
             System.out.println("消息 "+msgId+" 添加成功");
             thread.reportActionStatus(true,datagram.getIdentifier(),"",msgId);
+            thread.parent.remind(dstUid);
         }else{
             System.err.println("写入数据库失败");
             thread.reportActionStatus(false,datagram.getIdentifier(),"写入数据库失败",msgId);

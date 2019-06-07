@@ -1,7 +1,7 @@
 package com.nasa.bt.server.server.processor;
 
 import com.nasa.bt.server.cls.Datagram;
-import com.nasa.bt.server.cls.UserInfo;
+import com.nasa.bt.server.cls.LoginInfo;
 import com.nasa.bt.server.data.ServerDataUtils;
 import com.nasa.bt.server.server.ClientThread;
 import com.nasa.bt.server.utils.UUIDUtils;
@@ -34,7 +34,7 @@ public class SignInProcessor implements DataProcessor{
                 return;
             }
 
-            UserInfo info=ServerDataUtils.getUserByUid(uid);
+            LoginInfo info=ServerDataUtils.getLoginInfoByUid(uid);
             if(info==null){
                 onFailure(thread,"用户不存在");
                 return;
@@ -47,7 +47,7 @@ public class SignInProcessor implements DataProcessor{
             String name=params.get("username");
             String codeHash=params.get("code_hash");
 
-            UserInfo info=ServerDataUtils.getUserInfoByName(name);
+            LoginInfo info=ServerDataUtils.getLoginInfoByName(name);
             if(info==null){
                 onFailure(thread,"用户不存在");
                 return;

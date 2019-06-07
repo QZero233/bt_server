@@ -12,9 +12,16 @@ public class DataProcessorFactory {
     public static final String IDENTIFIER_GET_MESSAGE_INDEX="MEGI";
     public static final String IDENTIFIER_GET_MESSAGE_DETAIL="MEGD";
     public static final String IDENTIFIER_DELETE_MESSAGE="MEDE";
+    public static final String IDENTIFIER_GET_USER_INFO="USIF";
+    public static final String IDENTIFIER_GET_USERS_INDEX="USID";
+    public static final String IDENTIFIER_UPDATE_USER_INFO="IFUP";
+    public static final String IDENTIFIER_MARK_READ="MKRD";
+
 
     public static final String IDENTIFIER_RETURN_MESSAGE_INDEX="MERI";
     public static final String IDENTIFIER_RETURN_MESSAGE_DETAIL="MERD";
+    public static final String IDENTIFIER_RETURN_USER_INFO="USRF";
+    public static final String IDENTIFIER_RETURN_USERS_INDEX="USRI";
 
     /**
      * 根据标识符获取处理器
@@ -28,8 +35,12 @@ public class DataProcessorFactory {
             return new SendMessageProcessor();
         else if(identifier.equalsIgnoreCase(IDENTIFIER_GET_MESSAGE_INDEX) || identifier.equalsIgnoreCase(IDENTIFIER_GET_MESSAGE_DETAIL))
             return new GetMessageProcessor();
-        else if(identifier.equalsIgnoreCase(IDENTIFIER_DELETE_MESSAGE))
+        else if(identifier.equalsIgnoreCase(IDENTIFIER_DELETE_MESSAGE) || identifier.equalsIgnoreCase(IDENTIFIER_MARK_READ))
             return new DeleteMessageProcessor();
+        else if(identifier.equalsIgnoreCase(IDENTIFIER_GET_USER_INFO) || identifier.equalsIgnoreCase(IDENTIFIER_GET_USERS_INDEX))
+            return new GetUserProcessor();
+        else if(identifier.equalsIgnoreCase(IDENTIFIER_UPDATE_USER_INFO))
+            return new UpdateUserProcessor();
 
         return null;
     }

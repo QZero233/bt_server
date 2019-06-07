@@ -1,41 +1,18 @@
 package com.nasa.bt.server.cls;
 
-/**
- * 用户信息类
- * @author QZero
- */
 public class UserInfo {
 
-    /**
-     * 字符串类型的id 36个字符组成，由 UUIDUtils生成
-     */
-    private String id;
-
-    /**
-     * 用户名称
-     */
     private String name;
-
-    /**
-     * 用户密码的hash值（十六进制编码）
-     */
-    private String codeHash;
+    private String id;
+    private String key;
 
     public UserInfo() {
     }
 
-    public UserInfo(String id, String name, String codeHash) {
-        this.id = id;
+    public UserInfo(String name, String id, String key) {
         this.name = name;
-        this.codeHash = codeHash;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
         this.id = id;
+        this.key = key;
     }
 
     public String getName() {
@@ -46,20 +23,28 @@ public class UserInfo {
         this.name = name;
     }
 
-    public String getCodeHash() {
-        return codeHash;
+    public String getId() {
+        return id;
     }
 
-    public void setCodeHash(String codeHash) {
-        this.codeHash = codeHash;
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
     }
 
     @Override
     public String toString() {
         return "UserInfo{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", codeHash='" + codeHash + '\'' +
+                "name='" + name + '\'' +
+                ", id='" + id + '\'' +
+                ", key='" + key + '\'' +
                 '}';
     }
 }

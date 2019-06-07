@@ -35,6 +35,8 @@ public class CryptModuleFactory {
 
         if(name.equalsIgnoreCase(MODULE_NONE))
             return new CryptModuleNone();
+        else if(name.equalsIgnoreCase(MODULE_AES))
+            return new CryptModuleAes();
 
         return null;
     }

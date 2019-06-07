@@ -4,6 +4,7 @@ import com.nasa.bt.server.cls.Datagram;
 import com.nasa.bt.server.crypt.CryptModule;
 import com.nasa.bt.server.crypt.CryptModuleFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -32,6 +33,16 @@ public class SocketIOHelper {
      * 当前使用的加密模块
      */
     private CryptModule cryptModule;
+
+    /**
+     * 加密用的密钥
+     */
+    private static final String KEY_ENCRYPT="1234567890123456";
+
+    /**
+     * 解密用的密钥
+     */
+    private static final String KEY_DECRYPT="1234567890123456";
 
     /**
      * 初始化helper类
@@ -74,46 +85,61 @@ public class SocketIOHelper {
     public Datagram readIs() throws RuntimeException{
         synchronized (is){
             try {
+
+                //数据包总长度
+                int dataLength=is.read();
+                //明文信息总长度
+                int contentLength=is.read();
+
+                ByteArrayOutputStream tmpBuf=new ByteArrayOutputStream(dataLength);
+                byte[] buf=new byte[dataLength];
+                while (tmpBuf.size()<dataLength){
+                    int len=is.read(buf);
+                    tmpBuf.write(buf,0,len);
+                }
+
+                //全部内容读取完成，开始解密数据包
+                byte[] decrypted=cryptModule.doDecrypt(tmpBuf.toByteArray(),KEY_DECRYPT,null);
+                ByteArrayInputStream inputBuf=new ByteArrayInputStream(decrypted,0,contentLength);
+
                 //读取标识符
                 byte[] identifierBuf=new byte[4];
-                is.read(identifierBuf);
+                inputBuf.read(identifierBuf);
 
                 //读取版本号
-                int verCode=is.read();
+                int verCode=inputBuf.read();
 
                 //读取时间戳
                 byte[] timeBuf=new byte[8];
-                is.read(timeBuf);
+                inputBuf.read(timeBuf);
 
                 //读取参数数量
-                int paramsCount=is.read();//FIXME 在无参数时，会堵塞在此处，目前的解决方案是没参数就加个参数
+                int paramsCount=inputBuf.read();
                 Map<String,byte[]> params=new HashMap<>();
 
                 //读取具体参数
                 for(int i=0;i<paramsCount;i++){
                     //读取参数总长度以及参数名长度
-                    int paramLength=is.read();
-                    int paramNameLength=is.read();
+                    int paramLength=inputBuf.read();
+                    int paramNameLength=inputBuf.read();
                     paramLength-=paramNameLength;
 
                     //读取参数名
                     byte[] paramName=new byte[paramNameLength];
-                    is.read(paramName);
+                    inputBuf.read(paramName);
 
-                    //读取参数内容，循环读取直到读完
-                    ByteArrayOutputStream tmpStream=new ByteArrayOutputStream(paramLength);
-                    while(tmpStream.size()<paramLength){
-                        byte[] tmpBuf=new byte[paramLength];
-                        int len=is.read(tmpBuf);
-                        tmpStream.write(tmpBuf,0,len);
-                    }
-                    byte[] paramContent=tmpStream.toByteArray();
-                    params.put(new String(paramName),paramContent);
+                    byte[] paramBuf=new byte[paramLength];
+                    inputBuf.read(paramBuf);
+
+                    params.put(new String(paramName),paramBuf);
                 }
 
                 //读取完成，开始封装
                 String identifier=new String(identifierBuf);
                 Datagram datagram=new Datagram(identifier,verCode,byteArrayToLong(timeBuf),params);
+
+                System.out.println("DEBUG::"+datagram);//FIXME REMOVE
+
                 return datagram;
             }catch (Exception e) {
                 //e.printStackTrace();
@@ -138,26 +164,33 @@ public class SocketIOHelper {
 
         synchronized (os){
             try {
-                os.write(datagram.getIdentifier().getBytes());
-                os.write(datagram.getVerCode());
-                os.write(longToByteArray(datagram.getTime()));
+                //数据包正文内容缓冲区
+                ByteArrayOutputStream tmpBuf=new ByteArrayOutputStream();
+
+                //填充缓冲区
+                tmpBuf.write(datagram.getIdentifier().getBytes());
+                tmpBuf.write(datagram.getVerCode());
+                tmpBuf.write(longToByteArray(datagram.getTime()));
 
                 Map<String,byte[]> params=datagram.getParams();
-                if(params.isEmpty())
-                    os.write(0);
-                else
-                    os.write(params.size());
+                tmpBuf.write(params.size());
 
                 Set<String> keys=params.keySet();
                 for(String key:keys){
                     byte[] paramNameBuf=key.getBytes();
                     byte[] paramContentBuf=params.get(key);
 
-                    os.write(paramNameBuf.length+paramContentBuf.length);
-                    os.write(paramNameBuf.length);
-                    os.write(paramNameBuf);
-                    os.write(paramContentBuf);
+                    tmpBuf.write(paramNameBuf.length+paramContentBuf.length);
+                    tmpBuf.write(paramNameBuf.length);
+                    tmpBuf.write(paramNameBuf);
+                    tmpBuf.write(paramContentBuf);
                 }
+
+                byte[] encryptedBuf=cryptModule.doEncrypt(tmpBuf.toByteArray(),KEY_ENCRYPT,null);
+                os.write(encryptedBuf.length);
+                os.write(tmpBuf.size());
+                os.write(encryptedBuf);
+
                 return true;
             }catch (Exception e){
                 //e.printStackTrace();
