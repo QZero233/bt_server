@@ -37,6 +37,8 @@ public class CryptModuleFactory {
             return new CryptModuleNone();
         else if(name.equalsIgnoreCase(MODULE_AES))
             return new CryptModuleAes();
+        else if(name.equalsIgnoreCase(MODULE_RSA))
+            return new CryptModuleRSA();
 
         return null;
     }

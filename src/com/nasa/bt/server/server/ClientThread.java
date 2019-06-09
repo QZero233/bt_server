@@ -40,6 +40,9 @@ public class ClientThread extends Thread {
         while(!socket.isClosed()){
             try {
                 Datagram datagram=helper.readIs();
+                if(datagram==null)
+                    break;
+
                 String identifier=datagram.getIdentifier();
 
                 if(user==null && !identifier.equalsIgnoreCase(DataProcessorFactory.IDENTIFIER_SIGN_IN)){

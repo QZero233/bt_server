@@ -78,6 +78,27 @@ public class SocketIOHelper {
     }
 
     /**
+     * 将byte数组转为int
+     * @param buf byte数组
+     * @return longint
+     **/
+    public static int byteArrayToInt(byte[] buf){
+        ByteBuffer buffer=ByteBuffer.wrap(buf);
+        return buffer.getInt();
+    }
+
+    /**
+     * int转byte数组
+     * @param i int数据
+     * @return byte数组
+     */
+    public static byte[] intToByteArray(int i){
+        ByteBuffer buffer=ByteBuffer.allocate(4);
+        buffer.putInt(i);
+        return buffer.array();
+    }
+
+    /**
      * 从输入流中读取数据并转为数据包对象
      * @return 读取到的数据
      * @throws RuntimeException 当读取输入流错误时，抛出异常
@@ -86,10 +107,17 @@ public class SocketIOHelper {
         synchronized (is){
             try {
 
+                byte[] intTmpBuf=new byte[4];
                 //数据包总长度
-                int dataLength=is.read();
+                is.read(intTmpBuf);
+                int dataLength=byteArrayToInt(intTmpBuf);
+
+                if(dataLength<=0)
+                    return null;
+
                 //明文信息总长度
-                int contentLength=is.read();
+                is.read(intTmpBuf);
+                int contentLength=byteArrayToInt(intTmpBuf);
 
                 ByteArrayOutputStream tmpBuf=new ByteArrayOutputStream(dataLength);
                 byte[] buf=new byte[dataLength];
@@ -120,7 +148,8 @@ public class SocketIOHelper {
                 //读取具体参数
                 for(int i=0;i<paramsCount;i++){
                     //读取参数总长度以及参数名长度
-                    int paramLength=inputBuf.read();
+                    inputBuf.read(intTmpBuf);
+                    int paramLength=byteArrayToInt(intTmpBuf);
                     int paramNameLength=inputBuf.read();
                     paramLength-=paramNameLength;
 
@@ -142,7 +171,7 @@ public class SocketIOHelper {
 
                 return datagram;
             }catch (Exception e) {
-                //e.printStackTrace();
+                e.printStackTrace();
                 throw new RuntimeException("读取输入流错误，断开连接");
                 //一旦发生读取错误就断开与客户端的连接
             }
@@ -180,15 +209,15 @@ public class SocketIOHelper {
                     byte[] paramNameBuf=key.getBytes();
                     byte[] paramContentBuf=params.get(key);
 
-                    tmpBuf.write(paramNameBuf.length+paramContentBuf.length);
+                    tmpBuf.write(intToByteArray(paramNameBuf.length+paramContentBuf.length));
                     tmpBuf.write(paramNameBuf.length);
                     tmpBuf.write(paramNameBuf);
                     tmpBuf.write(paramContentBuf);
                 }
 
                 byte[] encryptedBuf=cryptModule.doEncrypt(tmpBuf.toByteArray(),KEY_ENCRYPT,null);
-                os.write(encryptedBuf.length);
-                os.write(tmpBuf.size());
+                os.write(intToByteArray(encryptedBuf.length));
+                os.write(intToByteArray(tmpBuf.size()));
                 os.write(encryptedBuf);
 
                 return true;

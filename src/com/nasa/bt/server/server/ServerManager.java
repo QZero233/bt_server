@@ -103,6 +103,7 @@ public class ServerManager {
 
     public void removeClient(String uid){
         clients.remove(uid);
+        System.out.println("DEBUG::"+uid+" quited");
     }
 
     public static ServerManager getInstance(){
