@@ -21,24 +21,6 @@ public class ServerDataUtils {
 
     public static final String MSG_ROOT_PATH="data/msg/";
 
-    /**
-     * 根据sid查找uid
-     * @param sid sid
-     * @return uid，失败返回null
-     */
-    public static String getUidBySid(String sid){
-        try {
-            ResultSet resultSet=helper.execSQLQuery("SELECT * FROM "+MysqlDbHelper.SID_TAB_NAME+" WHERE sid='"+sid+"'");
-            if(!resultSet.first())
-                return null;
-            String uid=resultSet.getString(resultSet.findColumn("id"));
-            return uid;
-        }catch (Exception e){
-            System.err.println("在根据SID查找UID时错误，sid="+sid);
-            e.printStackTrace();
-            return null;
-        }
-    }
 
     public static LoginInfo getLoginInfoFromResultSet(ResultSet resultSet){
         try {
@@ -159,18 +141,6 @@ public class ServerDataUtils {
         return false;
     }
 
-    /**
-     * 添加sid
-     * @param uid uid
-     * @param sid sid
-     * @return 是否成功
-     */
-    public static boolean addSid(String uid,String sid){
-        helper.execSQL("DELETE FROM "+MysqlDbHelper.SID_TAB_NAME+" WHERE id='"+uid+"'");
-        if(helper.execSQL("INSERT INTO "+MysqlDbHelper.SID_TAB_NAME+" (id,sid) VALUES ('"+uid+"','"+sid+"')")!=1)
-            return false;
-        return true;
-    }
 
     /**
      * 把消息写入本地文件
