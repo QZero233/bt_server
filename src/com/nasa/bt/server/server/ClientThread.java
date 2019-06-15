@@ -2,6 +2,7 @@ package com.nasa.bt.server.server;
 
 import com.nasa.bt.server.cls.Datagram;
 import com.nasa.bt.server.cls.LoginInfo;
+import com.nasa.bt.server.crypt.CryptModuleRSA;
 import com.nasa.bt.server.server.processor.DataProcessor;
 import com.nasa.bt.server.server.processor.DataProcessorFactory;
 
@@ -26,6 +27,7 @@ public class ClientThread extends Thread {
         this.parent = parent;
         try {
             helper=new SocketIOHelper(socket.getInputStream(),socket.getOutputStream());
+            helper.setPrivateKey(CryptModuleRSA.SERVER_PRI_KEY);
         }catch (Exception e){
             e.printStackTrace();
             System.err.println("启动客户端线程时错误");
@@ -35,6 +37,16 @@ public class ClientThread extends Thread {
     @Override
     public void run() {
         super.run();
+
+        new Thread(){
+            @Override
+            public void run() {
+                super.run();
+                //启动新线程来发送公钥信息
+                while(!helper.sendPublicKey(CryptModuleRSA.SERVER_PUB_KEY))
+                    System.err.println("发送公钥失败，继续尝试");
+            }
+        }.start();
 
         //只要连接没断就一直读取数据包
         while(!socket.isClosed()){

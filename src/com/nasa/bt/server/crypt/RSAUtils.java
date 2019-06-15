@@ -45,6 +45,9 @@ public class RSAUtils {
 
         keyFactory = KeyFactory.getInstance(RSA);
 
+        if(pri==null || pub==null)
+            return;
+
         //加载公钥私钥
         X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(pub));
         publicKey = (RSAPublicKey) keyFactory.generatePublic(x509EncodedKeySpec);
@@ -64,6 +67,16 @@ public class RSAUtils {
         //加载公钥
         X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(pub));
         publicKey = (RSAPublicKey) keyFactory.generatePublic(x509EncodedKeySpec);
+    }
+
+    public void loadPublicKey(String pubKey) throws Exception{
+        X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(pubKey));
+        publicKey = (RSAPublicKey) keyFactory.generatePublic(x509EncodedKeySpec);
+    }
+
+    public void loadPrivateKey(String priKey) throws Exception{
+        PKCS8EncodedKeySpec pKCS8EncodedKeySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(priKey));
+        privateKey = (RSAPrivateKey) keyFactory.generatePrivate(pKCS8EncodedKeySpec);
     }
 
     public String getPri() {

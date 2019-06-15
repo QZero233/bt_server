@@ -4,15 +4,13 @@ public class UserInfo {
 
     private String name;
     private String id;
-    private String key;
 
     public UserInfo() {
     }
 
-    public UserInfo(String name, String id, String key) {
+    public UserInfo(String name, String id) {
         this.name = name;
         this.id = id;
-        this.key = key;
     }
 
     public String getName() {
@@ -31,20 +29,11 @@ public class UserInfo {
         this.id = id;
     }
 
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
-
     @Override
     public String toString() {
         return "UserInfo{" +
                 "name='" + name + '\'' +
                 ", id='" + id + '\'' +
-                ", key='" + key + '\'' +
                 '}';
     }
 }

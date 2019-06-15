@@ -41,9 +41,13 @@ public class GetUserProcessor implements DataProcessor {
         }
 
         Map<String,byte[]> returnParams=new HashMap<>();
-        returnParams.put("uid",info.getId().getBytes());
-        returnParams.put("name",info.getName().getBytes());
-        returnParams.put("key",info.getKey().getBytes());
+        if(info==null){
+            returnParams.put("exist","0".getBytes());
+        }else{
+            returnParams.put("uid",info.getId().getBytes());
+            returnParams.put("name",info.getName().getBytes());
+            returnParams.put("exist","1".getBytes());
+        }
 
         Datagram returnDatagram=new Datagram(DataProcessorFactory.IDENTIFIER_RETURN_USER_INFO,returnParams);
         thread.helper.writeOs(returnDatagram);

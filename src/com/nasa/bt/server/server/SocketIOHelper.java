@@ -3,6 +3,8 @@ package com.nasa.bt.server.server;
 import com.nasa.bt.server.cls.Datagram;
 import com.nasa.bt.server.crypt.CryptModule;
 import com.nasa.bt.server.crypt.CryptModuleFactory;
+import com.nasa.bt.server.crypt.CryptModuleRSA;
+import com.nasa.bt.server.server.processor.DataProcessorFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -30,19 +32,9 @@ public class SocketIOHelper {
     private OutputStream os;
 
     /**
-     * 当前使用的加密模块
+     * 当前使用的加密模块s
      */
     private CryptModule cryptModule;
-
-    /**
-     * 加密用的密钥
-     */
-    private static final String KEY_ENCRYPT="1234567890123456";
-
-    /**
-     * 解密用的密钥
-     */
-    private static final String KEY_DECRYPT="1234567890123456";
 
     /**
      * 初始化helper类
@@ -127,7 +119,11 @@ public class SocketIOHelper {
                 }
 
                 //全部内容读取完成，开始解密数据包
-                byte[] decrypted=cryptModule.doDecrypt(tmpBuf.toByteArray(),KEY_DECRYPT,null);
+                byte[] decrypted=cryptModule.doDecrypt(tmpBuf.toByteArray(),null,null);
+                //解密失败返回空数据包
+                if(decrypted==null){
+                    return new Datagram(Datagram.IDENTIFIER_NONE,null);
+                }
                 ByteArrayInputStream inputBuf=new ByteArrayInputStream(decrypted,0,contentLength);
 
                 //读取标识符
@@ -215,7 +211,10 @@ public class SocketIOHelper {
                     tmpBuf.write(paramContentBuf);
                 }
 
-                byte[] encryptedBuf=cryptModule.doEncrypt(tmpBuf.toByteArray(),KEY_ENCRYPT,null);
+                byte[] encryptedBuf=cryptModule.doEncrypt(tmpBuf.toByteArray(),null,null);
+                //加密失败
+                if(encryptedBuf==null)
+                    return false;
                 os.write(intToByteArray(encryptedBuf.length));
                 os.write(intToByteArray(tmpBuf.size()));
                 os.write(encryptedBuf);
@@ -226,5 +225,37 @@ public class SocketIOHelper {
                 return false;
             }
         }
+    }
+
+    /**
+     * 向服务器发送自己的公钥
+     * @param key 公钥
+     * @return 是否成功
+     */
+    public boolean sendPublicKey(String key){
+        if(key==null || key.equals(""))
+            return false;
+
+        try {
+            ByteArrayOutputStream outputStream=new ByteArrayOutputStream();
+            outputStream.write(Datagram.IDENTIFIER_CHANGE_KEY.getBytes());
+            outputStream.write(key.getBytes());
+
+            os.write(intToByteArray(outputStream.size()));
+            os.write(intToByteArray(outputStream.size()));
+            os.write(outputStream.toByteArray());
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 设置私钥
+     * @param key 私钥
+     */
+    public void setPrivateKey(String key){
+        ((CryptModuleRSA)cryptModule).setMyPrivateKey(key);
     }
 }

@@ -10,6 +10,9 @@ import java.util.Set;
  */
 public class Datagram {
 
+    public static final String IDENTIFIER_NONE="NONE";
+    public static final String IDENTIFIER_CHANGE_KEY="CHKY";
+
     /**
      * 当前协议版本
      */
@@ -51,11 +54,8 @@ public class Datagram {
         this.verCode=CURRENT_VER_CODE;
         this.time=System.currentTimeMillis();
 
-        //FIXME 这一堆今后肯定得改的
         if(params==null)
             this.params=new HashMap<>();
-        if(this.params.isEmpty())
-            this.params.put("a","a".getBytes());
     }
 
     public String getIdentifier() {

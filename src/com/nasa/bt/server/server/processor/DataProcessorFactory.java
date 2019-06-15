@@ -14,7 +14,6 @@ public class DataProcessorFactory {
     public static final String IDENTIFIER_DELETE_MESSAGE="MEDE";
     public static final String IDENTIFIER_GET_USER_INFO="USIF";
     public static final String IDENTIFIER_GET_USERS_INDEX="USID";
-    public static final String IDENTIFIER_UPDATE_USER_INFO="IFUP";
     public static final String IDENTIFIER_MARK_READ="MKRD";
 
 
@@ -39,8 +38,7 @@ public class DataProcessorFactory {
             return new DeleteMessageProcessor();
         else if(identifier.equalsIgnoreCase(IDENTIFIER_GET_USER_INFO) || identifier.equalsIgnoreCase(IDENTIFIER_GET_USERS_INDEX))
             return new GetUserProcessor();
-        else if(identifier.equalsIgnoreCase(IDENTIFIER_UPDATE_USER_INFO))
-            return new UpdateUserProcessor();
+
 
         return null;
     }

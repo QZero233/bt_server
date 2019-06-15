@@ -67,8 +67,6 @@ public class ServerDataUtils {
         }
     }
 
-
-
     /**
      * 根据uid查找用户信息
      * @param uid uid
@@ -103,10 +101,9 @@ public class ServerDataUtils {
 
             String id=resultSet.getString(resultSet.findColumn("id"));
             String name=resultSet.getString(resultSet.findColumn("name"));
-            String key=resultSet.getString(resultSet.findColumn("pubKey"));
 
 
-            return new UserInfo(name,id,key);
+            return new UserInfo(name,id);
         }catch (Exception e){
             System.err.println("在读取结果集并转为用户对象时错误");
             e.printStackTrace();
@@ -132,13 +129,6 @@ public class ServerDataUtils {
             return "";
         }
 
-    }
-
-    public static boolean updateUserInfo(String key,String uid){
-        String sql="UPDATE "+MysqlDbHelper.USER_INFO_TAB_NAME+" SET pubKey='"+key+"' WHERE id='"+uid+"'";
-        if(helper.execSQL(sql)>=1)
-            return true;
-        return false;
     }
 
 
