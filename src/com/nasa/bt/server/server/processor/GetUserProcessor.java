@@ -16,7 +16,7 @@ public class GetUserProcessor implements DataProcessor {
         returnParams.put("index",index.getBytes());
 
         Datagram returnDatagram=new Datagram(DataProcessorFactory.IDENTIFIER_RETURN_USERS_INDEX,returnParams);
-        thread.helper.writeOs(returnDatagram);
+        thread.writeDatagram(returnDatagram);
     }
 
     @Override
@@ -50,6 +50,6 @@ public class GetUserProcessor implements DataProcessor {
         }
 
         Datagram returnDatagram=new Datagram(DataProcessorFactory.IDENTIFIER_RETURN_USER_INFO,returnParams);
-        thread.helper.writeOs(returnDatagram);
+        thread.writeDatagram(returnDatagram);
     }
 }

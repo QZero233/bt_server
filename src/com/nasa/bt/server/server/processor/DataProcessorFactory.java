@@ -1,5 +1,9 @@
 package com.nasa.bt.server.server.processor;
 
+import java.net.URL;
+import java.util.List;
+import java.util.Set;
+
 /**
  * 数据包处理类的工厂类
  * @author QZero
@@ -22,12 +26,14 @@ public class DataProcessorFactory {
     public static final String IDENTIFIER_RETURN_USER_INFO="USRF";
     public static final String IDENTIFIER_RETURN_USERS_INDEX="USRI";
 
+
     /**
      * 根据标识符获取处理器
      * @param identifier 标识符
      * @return 处理器，不存在则返回null
      */
     public static DataProcessor getProcessor(String identifier){
+
         if(identifier.equalsIgnoreCase(IDENTIFIER_SIGN_IN))
             return new SignInProcessor();
         else if(identifier.equalsIgnoreCase(IDENTIFIER_SEND_MESSAGE))

@@ -4,7 +4,7 @@ import com.nasa.bt.server.cls.Datagram;
 import com.nasa.bt.server.crypt.CryptModule;
 import com.nasa.bt.server.crypt.CryptModuleFactory;
 import com.nasa.bt.server.crypt.CryptModuleRSA;
-import com.nasa.bt.server.server.processor.DataProcessorFactory;
+import org.apache.log4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -20,6 +20,8 @@ import java.util.Set;
  * @author QZero
  */
 public class SocketIOHelper {
+
+    private static Logger log=Logger.getLogger(SocketIOHelper.class);
 
     /**
      * 输入流
@@ -163,11 +165,11 @@ public class SocketIOHelper {
                 String identifier=new String(identifierBuf);
                 Datagram datagram=new Datagram(identifier,verCode,byteArrayToLong(timeBuf),params);
 
-                System.out.println("DEBUG::"+datagram);//FIXME REMOVE
+                log.debug("收到数据包 "+datagram);
 
                 return datagram;
             }catch (Exception e) {
-                e.printStackTrace();
+                log.error("读取输入流错误，断开连接",e);
                 throw new RuntimeException("读取输入流错误，断开连接");
                 //一旦发生读取错误就断开与客户端的连接
             }

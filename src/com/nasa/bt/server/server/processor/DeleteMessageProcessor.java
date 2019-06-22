@@ -8,6 +8,7 @@ import com.nasa.bt.server.utils.UUIDUtils;
 
 import java.util.Map;
 
+@DatagramProcessor(identifier=Datagram.IDENTIFIER_DELETE_MESSAGE)
 public class DeleteMessageProcessor implements DataProcessor {
 
     @Override
@@ -22,13 +23,13 @@ public class DeleteMessageProcessor implements DataProcessor {
             Msg msgReadMark=new Msg(UUIDUtils.getRandomUUID(),"system",srcUid,null,System.currentTimeMillis());
             ServerDataUtils.addMsg(msgReadMark);
             ServerDataUtils.writeLocalMsgContent(msgReadMark.getMsgId(),msgId);
-            thread.parent.remind(srcUid);
+            thread.remind(srcUid);
 
             return;
         }
 
         Msg msg=ServerDataUtils.getMessageDetail(msgId);
-        if(msg==null || !msg.getDstUid().equals(thread.user.getId())){
+        if(msg==null || !msg.getDstUid().equals(thread.getCurrentUser().getId())){
             thread.reportActionStatus(false,datagram.getIdentifier(),"权限错误",msgId);
             return;
         }

@@ -1,9 +1,10 @@
 package com.nasa.bt.server.server;
 
+import com.nasa.bt.server.ServerMain;
 import com.nasa.bt.server.cls.Datagram;
-import com.nasa.bt.server.data.MysqlDbHelper;
 import com.nasa.bt.server.data.ServerDataUtils;
 import com.nasa.bt.server.server.processor.DataProcessorFactory;
+import org.apache.log4j.Logger;
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -15,6 +16,8 @@ import java.util.Map;
  * @author QZero
  */
 public class ServerManager {
+
+    private static final Logger log=Logger.getLogger(ServerManager.class);
 
     /**
      * 服务器端口
@@ -60,15 +63,13 @@ public class ServerManager {
      * 初始化服务器
      */
     private boolean init(){
-        //初始化sql数据库连接
-        MysqlDbHelper.getInstance();
         try {
             ss=new ServerSocket(port);
             status=STATUS_RUNNING;
+            log.info("服务器已启动......");
             return true;
         }catch (Exception e){
-            System.err.println("在启动服务器时发生错误");
-            e.printStackTrace();
+            log.error("在启动服务器时发生错误",e);
             status=STATUS_FAILED;
             return false;
         }
@@ -87,8 +88,7 @@ public class ServerManager {
                         Socket socket=ss.accept();
                         new ClientThread(socket,ServerManager.this).start();
                     }catch (Exception e){
-                        System.err.println("在接受客户端时发送错误");
-                        e.printStackTrace();
+                        log.error("在接受客户端时发送错误",e);
                     }
                 }
             }
@@ -97,13 +97,17 @@ public class ServerManager {
 
 
     public void addClient(ClientThread thread,String uid){
+        if(clients.get(uid)!=null){
+            clients.get(uid).terminate();
+        }
         clients.put(uid,thread);
         remind(uid);
     }
 
     public void removeClient(String uid){
+        clients.get(uid).terminate();
         clients.remove(uid);
-        System.out.println("DEBUG::"+uid+" quited");
+        log.info("用户 "+uid+" 已断开连接");
     }
 
     public static ServerManager getInstance(){
@@ -119,10 +123,10 @@ public class ServerManager {
                 public void run() {
                     super.run();
                     Map<String,byte[]> returnParams=new HashMap<>();
-                    String index= ServerDataUtils.getMessageIndex(clients.get(uid).user.getId());
+                    String index= ServerDataUtils.getMessageIndex(clients.get(uid).getCurrentUser().getId());
                     returnParams.put("index",index.getBytes());
                     Datagram returnDatagram=new Datagram(DataProcessorFactory.IDENTIFIER_RETURN_MESSAGE_INDEX,returnParams);
-                    clients.get(uid).helper.writeOs(returnDatagram);
+                    clients.get(uid).writeDatagram(returnDatagram);
                 }
             }.start();
         }

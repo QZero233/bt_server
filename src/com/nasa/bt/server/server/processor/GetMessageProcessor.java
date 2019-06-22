@@ -15,10 +15,10 @@ public class GetMessageProcessor implements DataProcessor {
         Map<String,byte[]> returnParams=new HashMap<>();
         if(datagram.getIdentifier().equalsIgnoreCase(DataProcessorFactory.IDENTIFIER_GET_MESSAGE_INDEX)){
             //获取索引
-            String index= ServerDataUtils.getMessageIndex(thread.user.getId());
+            String index= ServerDataUtils.getMessageIndex(thread.getCurrentUser().getId());
             returnParams.put("index",index.getBytes());
             Datagram returnDatagram=new Datagram(DataProcessorFactory.IDENTIFIER_RETURN_MESSAGE_INDEX,returnParams);
-            thread.helper.writeOs(returnDatagram);
+            thread.writeDatagram(returnDatagram);
         }else{
             //获取具体消息
             Map<String,String> params=datagram.getParamsAsString();
@@ -30,7 +30,7 @@ public class GetMessageProcessor implements DataProcessor {
                 return;
             }
 
-            if(!msg.getDstUid().equals(thread.user.getId())){
+            if(!msg.getDstUid().equals(thread.getCurrentUser().getId())){
                 thread.reportActionStatus(false,datagram.getIdentifier(),"访问权限错误",msgId);
                 return;
             }
@@ -41,7 +41,7 @@ public class GetMessageProcessor implements DataProcessor {
             returnParams.put("time", SocketIOHelper.longToByteArray(msg.getTime()));
 
             Datagram returnDatagram=new Datagram(DataProcessorFactory.IDENTIFIER_RETURN_MESSAGE_DETAIL,returnParams);
-            thread.helper.writeOs(returnDatagram);
+            thread.writeDatagram(returnDatagram);
         }
     }
 }

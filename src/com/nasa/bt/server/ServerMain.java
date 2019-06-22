@@ -1,12 +1,16 @@
 package com.nasa.bt.server;
 
 import com.nasa.bt.server.server.ServerManager;
+import org.apache.log4j.Logger;
 
 /**
  * 服务器运行类
  * @author QZero
  */
 public class ServerMain {
+
+    private static final Logger logger=Logger.getLogger(ServerMain.class);
+
     public static void main(String[] args) {
 
         /**
@@ -19,5 +23,6 @@ public class ServerMain {
          */
 
         ServerManager manager=ServerManager.getInstance();
+        logger.info("服务器已启动......");
     }
 }

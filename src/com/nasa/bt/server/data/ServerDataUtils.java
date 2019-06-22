@@ -1,9 +1,8 @@
 package com.nasa.bt.server.data;
 
-import com.nasa.bt.server.cls.LoginInfo;
 import com.nasa.bt.server.cls.Msg;
 import com.nasa.bt.server.cls.UserInfo;
-import com.nasa.bt.server.utils.UUIDUtils;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,60 +11,17 @@ import java.sql.ResultSet;
 
 public class ServerDataUtils {
 
-    private static MysqlDbHelper helper=null;
+    private static final Logger log=Logger.getLogger(ServerDataUtils.class);
+
     static{
-        if(helper==null)
-            helper=MysqlDbHelper.getInstance();
+        helper=MysqlDbHelper.getInstance();
         new File("data/msg/").mkdirs();
     }
 
     public static final String MSG_ROOT_PATH="data/msg/";
 
+    private static MysqlDbHelper helper;
 
-    public static LoginInfo getLoginInfoFromResultSet(ResultSet resultSet){
-        try {
-            if(!resultSet.first())
-                return null;
-
-            String id=resultSet.getString(resultSet.findColumn("id"));
-            String name=resultSet.getString(resultSet.findColumn("name"));
-            String codeHash=resultSet.getString(resultSet.findColumn("codeHash"));
-
-            LoginInfo userInfo=new LoginInfo(id,name,codeHash);
-            return userInfo;
-        }catch (Exception e){
-            System.err.println("在读取结果集并转为用户对象时错误");
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     * 根据uid查找用户信息
-     * @param uid uid
-     * @return 用户信息对象，失败返回null
-     */
-    public static LoginInfo getLoginInfoByUid(String uid){
-        try{
-            ResultSet resultSet=helper.execSQLQuery("SELECT * FROM "+MysqlDbHelper.USER_LOGIN_INFO_TAB_NAME +" WHERE id='"+uid+"'");
-            return getLoginInfoFromResultSet(resultSet);
-        }catch (Exception e){
-            System.err.println("根据UID查找用户时错误，uid="+uid);
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public static LoginInfo getLoginInfoByName(String name){
-        try{
-            ResultSet resultSet=helper.execSQLQuery("SELECT * FROM "+MysqlDbHelper.USER_LOGIN_INFO_TAB_NAME +" WHERE name='"+name+"'");
-            return getLoginInfoFromResultSet(resultSet);
-        }catch (Exception e){
-            System.err.println("根据用户名称查找用户时错误，name="+name);
-            e.printStackTrace();
-            return null;
-        }
-    }
 
     /**
      * 根据uid查找用户信息
@@ -77,8 +33,7 @@ public class ServerDataUtils {
             ResultSet resultSet=helper.execSQLQuery("SELECT * FROM "+MysqlDbHelper.USER_INFO_TAB_NAME +" WHERE id='"+uid+"'");
             return getUserInfoFromResultSet(resultSet);
         }catch (Exception e){
-            System.err.println("根据UID查找用户时错误，uid="+uid);
-            e.printStackTrace();
+            log.error("根据UID查找用户时错误，uid="+uid,e);
             return null;
         }
     }
@@ -88,8 +43,7 @@ public class ServerDataUtils {
             ResultSet resultSet=helper.execSQLQuery("SELECT * FROM "+MysqlDbHelper.USER_INFO_TAB_NAME +" WHERE name='"+name+"'");
             return getUserInfoFromResultSet(resultSet);
         }catch (Exception e){
-            System.err.println("根据用户名称查找用户时错误，name="+name);
-            e.printStackTrace();
+            log.error("根据用户名称查找用户时错误，name="+name,e);
             return null;
         }
     }
@@ -101,12 +55,12 @@ public class ServerDataUtils {
 
             String id=resultSet.getString(resultSet.findColumn("id"));
             String name=resultSet.getString(resultSet.findColumn("name"));
+            String codeHash=resultSet.getString(resultSet.findColumn("codeHash"));
 
 
-            return new UserInfo(name,id);
+            return new UserInfo(name,id,codeHash);
         }catch (Exception e){
-            System.err.println("在读取结果集并转为用户对象时错误");
-            e.printStackTrace();
+            log.error("在读取结果集并转为用户对象时错误",e);
             return null;
         }
     }
@@ -147,8 +101,7 @@ public class ServerDataUtils {
             fos.close();
             return true;
         }catch (Exception e){
-            System.err.println("在将消息内容写入文件时错误");
-            e.printStackTrace();
+            log.error("在将消息内容写入文件时错误",e);
             return false;
         }
     }
@@ -170,8 +123,7 @@ public class ServerDataUtils {
             fis.close();
             return new String(buf);
         }catch (Exception e){
-            System.err.println("在读取消息文件时错误");
-            e.printStackTrace();
+            log.error("在读取消息文件时错误",e);
             return null;
         }
     }
@@ -207,8 +159,7 @@ public class ServerDataUtils {
             }while (resultSet.next());
             return result;
         }catch (Exception e){
-            System.err.println("在获取消息索引时失败 "+uid);
-            e.printStackTrace();
+            log.error("在获取消息索引时失败 uid="+uid,e);
             return "";
         }
     }
@@ -236,8 +187,7 @@ public class ServerDataUtils {
             Msg msg=new Msg(msgId,srcUid,dstUid,content,time);
             return msg;
         }catch (Exception e){
-            System.err.println("在获取消息具体内容时失败 "+msgId);
-            e.printStackTrace();
+            log.error("在获取消息具体内容时失败 msgId="+msgId,e);
             return null;
         }
     }
