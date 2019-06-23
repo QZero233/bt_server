@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.nasa.bt.server.cls.Datagram;
 import com.nasa.bt.server.cls.Msg;
 import com.nasa.bt.server.cls.SecretChat;
+import com.nasa.bt.server.cls.UserInfo;
 import com.nasa.bt.server.data.ServerDataUtils;
 import com.nasa.bt.server.server.ClientThread;
 import com.nasa.bt.server.utils.UUIDUtils;
@@ -77,8 +78,16 @@ public class SecretChatProcessor implements DataProcessor {
     private void createSecretChat(Datagram datagram,ClientThread thread){
         Map<String,String> params=datagram.getParamsAsString();
 
-        String dstUid=params.get("dst_uid");
+        String dstName=params.get("dst_name");
         String keyHash=params.get("key_hash");
+
+        UserInfo userInfo=ServerDataUtils.getUserInfoByName(dstName);
+        if(userInfo==null){
+            thread.reportActionStatus(false,datagram.getIdentifier(),"用户不存在",null);
+            return;
+        }
+
+        String dstUid=userInfo.getId();
 
         if(dstUid==null || dstUid.equals(thread.getCurrentUser().getId())){
             thread.reportActionStatus(false,datagram.getIdentifier(),"不能和自己创建加密对话",null);

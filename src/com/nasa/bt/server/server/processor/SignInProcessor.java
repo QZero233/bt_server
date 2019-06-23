@@ -40,6 +40,6 @@ public class SignInProcessor implements DataProcessor {
         }
 
         thread.setCurrentUser(user);
-        onSuccess(thread, "");
+        onSuccess(thread, user.getId());
     }
 }

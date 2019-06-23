@@ -137,8 +137,8 @@ public class ServerDataUtils {
      * @return 是否成功
      */
     public static boolean addMsg(Msg msg){
-        String sql="INSERT INTO "+MysqlDbHelper.MSG_TAB_NAME+" (msgId,srcUid,dstUid,time) VALUES ('"+msg.getMsgId()+"','"+msg.getSrcUid()+"','"+
-                msg.getDstUid()+"',"+msg.getTime()+")";
+        String sql="INSERT INTO "+MysqlDbHelper.MSG_TAB_NAME+" (msgId,srcUid,dstUid,time,msgType) VALUES ('"+msg.getMsgId()+"','"+msg.getSrcUid()+"','"+
+                msg.getDstUid()+"',"+msg.getTime()+",'"+msg.getMsgType()+"')";
 
         if(helper.execSQL(sql)!=1)
             return false;

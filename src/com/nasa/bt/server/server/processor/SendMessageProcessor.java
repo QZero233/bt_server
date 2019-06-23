@@ -39,9 +39,14 @@ public class SendMessageProcessor implements DataProcessor {
             return;
         }
 
-        String dstUid=(secretChat.getSrcUid().equals(thread.getCurrentUser().getId()))?secretChat.getDstUid():secretChat.getSrcUid();
+        String dstUid;
+        if(secretChat.getSrcUid().equals(thread.getCurrentUser().getId()))
+            dstUid=secretChat.getDstUid();
+        else
+           dstUid=secretChat.getSrcUid();
+
         msg.setDstUid(dstUid);
-        msg.setSrcUid(msg.getDstUid());
+        msg.setSrcUid(secretChat.getSessionId());
         msg.setTime(System.currentTimeMillis());
         processMsg(msg,datagram,thread);
     }
@@ -49,6 +54,7 @@ public class SendMessageProcessor implements DataProcessor {
     private void processNormal(Datagram datagram,ClientThread thread){
         Map<String,String> params=datagram.getParamsAsString();
         Msg msg= JSON.parseObject(params.get("msg"),Msg.class);
+        msg.setSrcUid(thread.getCurrentUser().getId());
         processMsg(msg,datagram,thread);
     }
 
@@ -71,9 +77,9 @@ public class SendMessageProcessor implements DataProcessor {
             return;
         }
 
-        msg=new Msg(msgId,thread.getCurrentUser().getId(),dstUid,null,msg.getMsgType(),System.currentTimeMillis());
+        msg=new Msg(msgId,msg.getSrcUid(),dstUid,null,msg.getMsgType(),System.currentTimeMillis());
         if(ServerDataUtils.addMsg(msg)){
-            log.info("消息 "+msgId+" 添加成功");
+            log.debug("消息 "+msg+" 添加成功");
             thread.reportActionStatus(true,datagram.getIdentifier(),"",msgId);
             thread.remind(dstUid);
         }else{
