@@ -15,13 +15,13 @@ public class GetUserProcessor implements DataProcessor {
         Map<String,byte[]> returnParams=new HashMap<>();
         returnParams.put("index",index.getBytes());
 
-        Datagram returnDatagram=new Datagram(DataProcessorFactory.IDENTIFIER_RETURN_USERS_INDEX,returnParams);
+        Datagram returnDatagram=new Datagram(Datagram.IDENTIFIER_RETURN_USERS_INDEX,returnParams);
         thread.writeDatagram(returnDatagram);
     }
 
     @Override
     public void process(Datagram datagram, ClientThread thread) {
-        if(datagram.getIdentifier().equalsIgnoreCase(DataProcessorFactory.IDENTIFIER_GET_USERS_INDEX)){
+        if(datagram.getIdentifier().equalsIgnoreCase(Datagram.IDENTIFIER_GET_USERS_INDEX)){
             getIndex(thread);
             return;
         }
@@ -49,7 +49,7 @@ public class GetUserProcessor implements DataProcessor {
             returnParams.put("exist","1".getBytes());
         }
 
-        Datagram returnDatagram=new Datagram(DataProcessorFactory.IDENTIFIER_RETURN_USER_INFO,returnParams);
+        Datagram returnDatagram=new Datagram(Datagram.IDENTIFIER_RETURN_USER_INFO,returnParams);
         thread.writeDatagram(returnDatagram);
     }
 }

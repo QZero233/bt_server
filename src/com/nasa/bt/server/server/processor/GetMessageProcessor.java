@@ -14,11 +14,11 @@ public class GetMessageProcessor implements DataProcessor {
     @Override
     public void process(Datagram datagram, ClientThread thread) {
         Map<String,byte[]> returnParams=new HashMap<>();
-        if(datagram.getIdentifier().equalsIgnoreCase(DataProcessorFactory.IDENTIFIER_GET_MESSAGE_INDEX)){
+        if(datagram.getIdentifier().equalsIgnoreCase(Datagram.IDENTIFIER_GET_MESSAGE_INDEX)){
             //获取索引
             String index= ServerDataUtils.getMessageIndex(thread.getCurrentUser().getId());
             returnParams.put("index",index.getBytes());
-            Datagram returnDatagram=new Datagram(DataProcessorFactory.IDENTIFIER_RETURN_MESSAGE_INDEX,returnParams);
+            Datagram returnDatagram=new Datagram(Datagram.IDENTIFIER_RETURN_MESSAGE_INDEX,returnParams);
             thread.writeDatagram(returnDatagram);
         }else{
             //获取具体消息
@@ -40,7 +40,7 @@ public class GetMessageProcessor implements DataProcessor {
 
             returnParams.put("msg", JSON.toJSONString(msg).getBytes());
 
-            Datagram returnDatagram=new Datagram(DataProcessorFactory.IDENTIFIER_RETURN_MESSAGE_DETAIL,returnParams);
+            Datagram returnDatagram=new Datagram(Datagram.IDENTIFIER_RETURN_MESSAGE_DETAIL,returnParams);
             thread.writeDatagram(returnDatagram);
         }
     }

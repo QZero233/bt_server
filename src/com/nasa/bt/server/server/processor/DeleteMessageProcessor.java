@@ -16,7 +16,7 @@ public class DeleteMessageProcessor implements DataProcessor {
         Map<String,String> params=datagram.getParamsAsString();
         String msgId=params.get("msg_id");
 
-        if(datagram.getIdentifier().equalsIgnoreCase(DataProcessorFactory.IDENTIFIER_MARK_READ)){
+        if(datagram.getIdentifier().equalsIgnoreCase(Datagram.IDENTIFIER_MARK_READ)){
             //标记消息已读
             String srcUid=params.get("src_uid");
 

@@ -1,6 +1,7 @@
 package com.nasa.bt.server.data;
 
 import com.nasa.bt.server.cls.Msg;
+import com.nasa.bt.server.cls.SecretChat;
 import com.nasa.bt.server.cls.ServerProperties;
 import com.nasa.bt.server.cls.UserInfo;
 import org.apache.log4j.Logger;
@@ -213,6 +214,10 @@ public class ServerDataUtils {
         return false;
     }
 
+    /**
+     * 读取服务器配置信息
+     * @return 服务器配置信息的对象
+     */
     public static ServerProperties readProperties(){
         ServerProperties defaultProperties=new ServerProperties(8848);
 
@@ -242,6 +247,78 @@ public class ServerDataUtils {
         }catch (Exception e){
             log.error("在解析服务器配置文件时错误",e);
             return defaultProperties;
+        }
+    }
+
+    /**
+     * 向数据库中写入一个私密聊天
+     * @param secretChat 对象
+     * @return 是否成功
+     */
+    public static boolean createSecretChat(SecretChat secretChat){
+        String sql="INSERT INTO "+MysqlDbHelper.SECRET_CHAT_TAB_NAME+" (sessionId,srcUid,dstUid,keyHash) VALUES ('"+secretChat.getSessionId()
+                +"','"+secretChat.getSrcUid()+"','"+secretChat.getDstUid()+"','"+secretChat.getKeyHash()+"')";
+        if(helper.execSQL(sql)==1)
+            return true;
+        return false;
+    }
+
+    /**
+     * 删除一个私密聊天
+     * @param sessionId 私密聊天ID
+     * @return 是否成功
+     */
+    public static boolean deleteSecretChat(String sessionId){
+        String sql="DELETE FROM "+MysqlDbHelper.SECRET_CHAT_TAB_NAME+" WHERE sessionId='"+sessionId+"'";
+        if(helper.execSQL(sql)==-1)
+            return false;
+        return true;
+    }
+
+    /**
+     * 获取用户所有的私密聊天ID
+     * @param uid 用户UID
+     * @return 索引
+     */
+    public static String getSecretChatIndex(String uid){
+        String sql="SELECT * FROM "+MysqlDbHelper.SECRET_CHAT_TAB_NAME+" WHERE dstUid='"+uid+"' or srcUid='"+uid+"'";
+        try {
+            ResultSet resultSet=helper.execSQLQuery(sql);
+            if(!resultSet.first())
+                return "";
+
+            String result="";
+            do{
+                result+=resultSet.getString(resultSet.findColumn("sessionId"));
+            }while (resultSet.next());
+            return result;
+        }catch (Exception e){
+            log.error("在获取用户私密聊天索引读取结果集时出错 uid="+uid,e);
+            return "";
+        }
+    }
+
+    /**
+     * 获取一个私密聊天的具体信息
+     * @param sessionId 会话ID
+     * @return 对象
+     */
+    public static SecretChat getSecretChat(String sessionId){
+        String sql="SELECT * FROM "+MysqlDbHelper.SECRET_CHAT_TAB_NAME+" WHERE sessionId='"+sessionId+"'";
+        try {
+            ResultSet resultSet=helper.execSQLQuery(sql);
+            if(!resultSet.first())
+                return null;
+
+            String srcUid=resultSet.getString(resultSet.findColumn("srcUid"));
+            String dstUid=resultSet.getString(resultSet.findColumn("dstUid"));
+            String keyHash=resultSet.getString(resultSet.findColumn("keyHash"));
+
+            SecretChat secretChat=new SecretChat(sessionId,srcUid,dstUid,keyHash);
+            return secretChat;
+        }catch (Exception e){
+            log.error("在获取私密聊天具体信息读取结果集时出错 sessionId="+sessionId,e);
+            return null;
         }
     }
 

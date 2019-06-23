@@ -13,12 +13,12 @@ public class SignInProcessor implements DataProcessor {
     private static final Logger log=Logger.getLogger(SignInProcessor.class);
 
     private void onFailure(ClientThread thread, String more) {
-        thread.reportActionStatus(false, DataProcessorFactory.IDENTIFIER_SIGN_IN, more, null);
+        thread.reportActionStatus(false, Datagram.IDENTIFIER_SIGN_IN, more, null);
         log.info("处理用户登录失败 原因 " + more);
     }
 
     private void onSuccess(ClientThread thread, String more) {
-        thread.reportActionStatus(true, DataProcessorFactory.IDENTIFIER_SIGN_IN, more, null);
+        thread.reportActionStatus(true, Datagram.IDENTIFIER_SIGN_IN, more, null);
     }
 
     @Override

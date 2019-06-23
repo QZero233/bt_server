@@ -19,6 +19,7 @@ public class MysqlDbHelper {
 
     public static final String MSG_TAB_NAME = "temp_message";
     public static final String USER_INFO_TAB_NAME = "bt_user_info";
+    public static final String SECRET_CHAT_TAB_NAME = "bt_secret_sessions";
 
     private static MysqlDbHelper instance;
 

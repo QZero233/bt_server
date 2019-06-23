@@ -65,7 +65,7 @@ public class ClientThread extends Thread {
 
                 String identifier=datagram.getIdentifier();
 
-                if(currentUser==null && !identifier.equalsIgnoreCase(DataProcessorFactory.IDENTIFIER_SIGN_IN)){
+                if(currentUser==null && !identifier.equalsIgnoreCase(Datagram.IDENTIFIER_SIGN_IN)){
                     reportActionStatus(false,identifier,"在未登录前不能进行其他操作",null);
                     continue;
                 }
@@ -96,7 +96,7 @@ public class ClientThread extends Thread {
         Map<String,String> params=new HashMap<>();
         params.put("action_report", JSON.toJSONString(report));
 
-        Datagram datagram=new Datagram(DataProcessorFactory.IDENTIFIER_REPORT,params,"");
+        Datagram datagram=new Datagram(Datagram.IDENTIFIER_REPORT,params,"");
         helper.writeOs(datagram);
     }
 
