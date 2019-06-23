@@ -49,7 +49,7 @@ public class MysqlDbHelper {
     /**
      * 检查当前数据库连接状态，若断开则重连
      */
-    private void checkConnectionStatus(){
+    public synchronized void checkConnectionStatus(){
         try {
             if(mConnection.isClosed())
                 mConnection =  DriverManager.getConnection(url, username, password);

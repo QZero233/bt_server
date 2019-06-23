@@ -1,6 +1,7 @@
 package com.nasa.bt.server.data;
 
 import com.nasa.bt.server.cls.Msg;
+import com.nasa.bt.server.cls.ServerProperties;
 import com.nasa.bt.server.cls.UserInfo;
 import org.apache.log4j.Logger;
 
@@ -19,6 +20,7 @@ public class ServerDataUtils {
     }
 
     public static final String MSG_ROOT_PATH="data/msg/";
+    public static final String PROPERTIES_FILE_PATH="server.properties";
 
     private static MysqlDbHelper helper;
 
@@ -178,13 +180,14 @@ public class ServerDataUtils {
 
             String srcUid=resultSet.getString(resultSet.findColumn("srcUid"));
             String dstUid=resultSet.getString(resultSet.findColumn("dstUid"));
+            String msgType=resultSet.getString(resultSet.findColumn("msgType"));
             long time=resultSet.getLong(resultSet.findColumn("time"));
 
             String content=readLocalMsgContent(msgId);
             if(content==null)
                 return null;
 
-            Msg msg=new Msg(msgId,srcUid,dstUid,content,time);
+            Msg msg=new Msg(msgId,srcUid,dstUid,content,msgType,time);
             return msg;
         }catch (Exception e){
             log.error("在获取消息具体内容时失败 msgId="+msgId,e);
@@ -208,6 +211,38 @@ public class ServerDataUtils {
         if(helper.execSQL("DELETE FROM "+MysqlDbHelper.MSG_TAB_NAME+" WHERE msgId='"+msgId+"'")>=1)
             return true;
         return false;
+    }
+
+    public static ServerProperties readProperties(){
+        ServerProperties defaultProperties=new ServerProperties(8848);
+
+        File file=new File(PROPERTIES_FILE_PATH);
+        if(!file.exists())
+            return defaultProperties;
+
+        /**
+         * 配置文件格式
+         * 第一行 服务器端口号
+         */
+        String propertiesStr;
+        try{
+            FileInputStream fis=new FileInputStream(file);
+            byte[] buf=new byte[(int) file.length()];
+            fis.read(buf);
+            fis.close();
+            propertiesStr=new String(buf);
+        }catch (Exception e){
+            log.error("在读取服务器配置文件时错误",e);
+            return defaultProperties;
+        }
+
+        try {
+            int port=Integer.parseInt(propertiesStr);
+            return new ServerProperties(port);
+        }catch (Exception e){
+            log.error("在解析服务器配置文件时错误",e);
+            return defaultProperties;
+        }
     }
 
 }

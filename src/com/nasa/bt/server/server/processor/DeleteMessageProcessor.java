@@ -20,7 +20,7 @@ public class DeleteMessageProcessor implements DataProcessor {
             //标记消息已读
             String srcUid=params.get("src_uid");
 
-            Msg msgReadMark=new Msg(UUIDUtils.getRandomUUID(),"system",srcUid,null,System.currentTimeMillis());
+            Msg msgReadMark=new Msg(UUIDUtils.getRandomUUID(),"system",srcUid,null,Msg.MSG_TYPE_NORMAL,System.currentTimeMillis());
             ServerDataUtils.addMsg(msgReadMark);
             ServerDataUtils.writeLocalMsgContent(msgReadMark.getMsgId(),msgId);
             thread.remind(srcUid);

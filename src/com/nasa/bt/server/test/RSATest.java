@@ -11,8 +11,6 @@ public class RSATest {
     @Test
     public void testRSA() throws  Exception{
         RSAUtils utils=new RSAUtils();
-        System.out.println(utils.getPub());
-        System.out.println(utils.getPri());
     }
 
     @Test

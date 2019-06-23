@@ -1,5 +1,6 @@
 package com.nasa.bt.server.server.processor;
 
+import com.alibaba.fastjson.JSON;
 import com.nasa.bt.server.cls.Datagram;
 import com.nasa.bt.server.cls.Msg;
 import com.nasa.bt.server.data.ServerDataUtils;
@@ -35,10 +36,9 @@ public class GetMessageProcessor implements DataProcessor {
                 return;
             }
 
-            returnParams.put("msg_id",msgId.getBytes());
-            returnParams.put("src_uid",msg.getSrcUid().getBytes());
-            returnParams.put("msg_content",msg.getContent().getBytes());
-            returnParams.put("time", SocketIOHelper.longToByteArray(msg.getTime()));
+
+
+            returnParams.put("msg", JSON.toJSONString(msg).getBytes());
 
             Datagram returnDatagram=new Datagram(DataProcessorFactory.IDENTIFIER_RETURN_MESSAGE_DETAIL,returnParams);
             thread.writeDatagram(returnDatagram);

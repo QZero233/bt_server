@@ -2,6 +2,7 @@ package com.nasa.bt.server.server;
 
 import com.nasa.bt.server.ServerMain;
 import com.nasa.bt.server.cls.Datagram;
+import com.nasa.bt.server.cls.ServerProperties;
 import com.nasa.bt.server.data.ServerDataUtils;
 import com.nasa.bt.server.server.processor.DataProcessorFactory;
 import org.apache.log4j.Logger;
@@ -24,21 +25,6 @@ public class ServerManager {
      */
     private int port;
 
-    /**
-     * 当前服务器状态
-     * 详情见代码中的常量
-     */
-    private int status=0;
-
-    /**
-     * 服务器状态 启动失败
-     */
-    public static final int STATUS_FAILED=-1;
-
-    /**
-     * 服务器状态 正在运行
-     */
-    public static final int STATUS_RUNNING=1;
 
     /**
      * 所有客户端的集合
@@ -50,11 +36,8 @@ public class ServerManager {
     private static ServerManager instance;
 
     private ServerManager(){
-        /*
-        Q：程序员撒过的最多的谎是什么
-        A：//TODO....
-         */
-        this.port=8848;//TODO 读取配置文件更改默认端口
+        ServerProperties properties=ServerDataUtils.readProperties();
+        this.port=properties.getServerPort();
         if(init())
             startListening();
     }
@@ -65,12 +48,10 @@ public class ServerManager {
     private boolean init(){
         try {
             ss=new ServerSocket(port);
-            status=STATUS_RUNNING;
             log.info("服务器已启动......");
             return true;
         }catch (Exception e){
             log.error("在启动服务器时发生错误",e);
-            status=STATUS_FAILED;
             return false;
         }
     }

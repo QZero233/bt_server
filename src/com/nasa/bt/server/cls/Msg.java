@@ -5,16 +5,23 @@ public class Msg {
     private String srcUid;
     private String dstUid;
     private String content;
+    private String msgType;
     private long time;
+
+    public static final String MSG_TYPE_NORMAL="NORMAL";
+    public static final String MSG_TYPE_SECRET_1="SECRET_1";
+    public static final String MSG_TYPE_SECRET_6="SECRET_6";
+    public static final String MSG_TYPE_GROUP="GROUP";
 
     public Msg() {
     }
 
-    public Msg(String msgId, String srcUid, String dstUid, String content, long time) {
+    public Msg(String msgId, String srcUid, String dstUid, String content, String msgType, long time) {
         this.msgId = msgId;
         this.srcUid = srcUid;
         this.dstUid = dstUid;
         this.content = content;
+        this.msgType = msgType;
         this.time = time;
     }
 
@@ -58,6 +65,14 @@ public class Msg {
         this.time = time;
     }
 
+    public String getMsgType() {
+        return msgType;
+    }
+
+    public void setMsgType(String msgType) {
+        this.msgType = msgType;
+    }
+
     @Override
     public String toString() {
         return "Msg{" +
@@ -65,6 +80,7 @@ public class Msg {
                 ", srcUid='" + srcUid + '\'' +
                 ", dstUid='" + dstUid + '\'' +
                 ", content='" + content + '\'' +
+                ", msgType='" + msgType + '\'' +
                 ", time=" + time +
                 '}';
     }

@@ -1,8 +1,11 @@
 package com.nasa.bt.server.server;
 
+import com.alibaba.fastjson.JSON;
+import com.nasa.bt.server.cls.ActionReport;
 import com.nasa.bt.server.cls.Datagram;
 import com.nasa.bt.server.cls.UserInfo;
 import com.nasa.bt.server.crypt.CryptModuleRSA;
+import com.nasa.bt.server.data.MysqlDbHelper;
 import com.nasa.bt.server.server.processor.DataProcessor;
 import com.nasa.bt.server.server.processor.DataProcessorFactory;
 import org.apache.log4j.Logger;
@@ -19,7 +22,6 @@ public class ClientThread extends Thread {
 
     private static final Logger log=Logger.getLogger(ClientThread.class);
 
-    //TODO P.S. 这里作者懒，直接用的public，日后有时间改了
     private Socket socket;
     private SocketIOHelper helper;
     private ServerManager parent;
@@ -29,6 +31,7 @@ public class ClientThread extends Thread {
     public ClientThread(Socket socket, ServerManager parent) {
         this.socket = socket;
         this.parent = parent;
+        MysqlDbHelper.getInstance().checkConnectionStatus();
         try {
             helper=new SocketIOHelper(socket.getInputStream(),socket.getOutputStream());
             helper.setPrivateKey(CryptModuleRSA.SERVER_PRI_KEY);
@@ -84,18 +87,16 @@ public class ClientThread extends Thread {
     }
 
     public void reportActionStatus(boolean status,String identifier,String more,String replyId){
-        String statusStr="1";
+        String statusStr= ActionReport.STATUS_SUCCESS;
         if(!status)
-            statusStr="0";
+            statusStr=ActionReport.STATUS_FAILURE;
 
-        Map<String,byte[]> params=new HashMap<>();
-        params.put("action_status",statusStr.getBytes());
-        params.put("action_identifier",identifier.getBytes());
-        params.put("more",more.getBytes());
-        if(replyId!=null)
-            params.put("reply_id",replyId.getBytes());
+        ActionReport report=new ActionReport(statusStr,identifier,replyId,more);
 
-        Datagram datagram=new Datagram(DataProcessorFactory.IDENTIFIER_REPORT,params);
+        Map<String,String> params=new HashMap<>();
+        params.put("action_report", JSON.toJSONString(report));
+
+        Datagram datagram=new Datagram(DataProcessorFactory.IDENTIFIER_REPORT,params,"");
         helper.writeOs(datagram);
     }
 
