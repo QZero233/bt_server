@@ -26,6 +26,7 @@ public class RSATest {
     @Test
     public void sha256Test(){
         System.out.println(SHA256Utils.getSHA256InHex("439-2384-3"));
+        System.out.println(SHA256Utils.getSHA256InHex(""));
     }
 
 }
