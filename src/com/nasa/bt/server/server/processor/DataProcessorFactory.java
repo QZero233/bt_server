@@ -23,11 +23,11 @@ public class DataProcessorFactory {
             return new GetMessageProcessor();
         else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_DELETE_MESSAGE) || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_MARK_READ))
             return new DeleteMessageProcessor();
-        else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_GET_USER_INFO) || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_GET_USERS_INDEX))
-            return new GetUserProcessor();
-        else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_CREATE_SECRET_CHAT) || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_DELETE_SECRET_CHAT) ||
-                identifier.equalsIgnoreCase(Datagram.IDENTIFIER_GET_SECRET_CHAT) || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_GET_SECRET_CHAT_INDEX))
-            return new SecretChatProcessor();
+        else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_GET_USER_INFO))
+            return new UserProcessor();
+        else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_CREATE_SESSION) || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_GET_SESSION_DETAIL) ||
+        identifier.equalsIgnoreCase(Datagram.IDENTIFIER_GET_SESSIONS_INDEX))
+            return new SessionProcessor();
 
 
         return null;

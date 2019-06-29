@@ -104,7 +104,7 @@ public class ServerManager {
                 public void run() {
                     super.run();
                     Map<String,byte[]> returnParams=new HashMap<>();
-                    String index= ServerDataUtils.getMessageIndex(clients.get(uid).getCurrentUser().getId());
+                    String index= new ServerDataUtils().getMessageIndex(clients.get(uid).getCurrentUser().getId());
                     returnParams.put("index",index.getBytes());
                     Datagram returnDatagram=new Datagram(Datagram.IDENTIFIER_RETURN_MESSAGE_INDEX,returnParams);
                     clients.get(uid).writeDatagram(returnDatagram);

@@ -17,13 +17,13 @@ public class MysqlDbHelper {
 
     private Connection mConnection;
 
-    public static final String MSG_TAB_NAME = "temp_message";
-    public static final String USER_INFO_TAB_NAME = "bt_user_info";
-    public static final String SECRET_CHAT_TAB_NAME = "bt_secret_sessions";
+    public static final String TAB_NAME_MSG = "tempMessage";
+    public static final String TAB_NAME_USER_INFO = "btUserInfo";
+    public static final String TAB_NAME_AUTH_INFO = "btUserAuthInfo";
+    public static final String TAB_NAME_SESSIONS = "btSessions";
 
-    private static MysqlDbHelper instance;
 
-    private MysqlDbHelper(){
+    public MysqlDbHelper(){
         try{
             mConnection =  DriverManager.getConnection(url, username, password);
         }catch (Exception e){
@@ -31,12 +31,6 @@ public class MysqlDbHelper {
         }
     }
 
-    public static MysqlDbHelper getInstance(){
-        if(instance==null)
-            instance=new MysqlDbHelper();
-        instance.checkConnectionStatus();
-        return instance;
-    }
 
     /**
      * 执行sql安全检查

@@ -2,17 +2,16 @@ package com.nasa.bt.server.cls;
 
 public class UserInfo {
 
-    private String name;
     private String id;
-    private String codeHash;
+    private String name;
+
 
     public UserInfo() {
     }
 
-    public UserInfo(String name, String id, String codeHash) {
-        this.name = name;
+    public UserInfo(String id, String name) {
         this.id = id;
-        this.codeHash = codeHash;
+        this.name = name;
     }
 
     public String getName() {
@@ -31,20 +30,12 @@ public class UserInfo {
         this.id = id;
     }
 
-    public String getCodeHash() {
-        return codeHash;
-    }
-
-    public void setCodeHash(String codeHash) {
-        this.codeHash = codeHash;
-    }
 
     @Override
     public String toString() {
         return "UserInfo{" +
-                "name='" + name + '\'' +
-                ", id='" + id + '\'' +
-                ", codeHash='" + codeHash + '\'' +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
                 '}';
     }
 }

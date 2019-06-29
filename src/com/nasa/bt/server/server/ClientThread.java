@@ -6,6 +6,7 @@ import com.nasa.bt.server.cls.Datagram;
 import com.nasa.bt.server.cls.UserInfo;
 import com.nasa.bt.server.crypt.CryptModuleRSA;
 import com.nasa.bt.server.data.MysqlDbHelper;
+import com.nasa.bt.server.data.ServerDataUtils;
 import com.nasa.bt.server.server.processor.DataProcessor;
 import com.nasa.bt.server.server.processor.DataProcessorFactory;
 import org.apache.log4j.Logger;
@@ -28,11 +29,13 @@ public class ClientThread extends Thread {
 
     private UserInfo currentUser=null;
 
+    private ServerDataUtils dataUtils;
+
     public ClientThread(Socket socket, ServerManager parent) {
         this.socket = socket;
         this.parent = parent;
-        MysqlDbHelper.getInstance().checkConnectionStatus();
         try {
+            dataUtils=new ServerDataUtils();
             helper=new SocketIOHelper(socket.getInputStream(),socket.getOutputStream());
             helper.setPrivateKey(CryptModuleRSA.SERVER_PRI_KEY);
             log.info("新客户端连接成功");
@@ -124,5 +127,9 @@ public class ClientThread extends Thread {
         }catch (Exception e){
             log.error("在关闭连接时异常",e);;
         }
+    }
+
+    public ServerDataUtils getDataUtils() {
+        return dataUtils;
     }
 }

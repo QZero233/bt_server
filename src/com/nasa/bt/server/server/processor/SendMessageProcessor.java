@@ -3,7 +3,6 @@ package com.nasa.bt.server.server.processor;
 import com.alibaba.fastjson.JSON;
 import com.nasa.bt.server.cls.Datagram;
 import com.nasa.bt.server.cls.Msg;
-import com.nasa.bt.server.cls.SecretChat;
 import com.nasa.bt.server.data.ServerDataUtils;
 import com.nasa.bt.server.server.ClientThread;
 import org.apache.log4j.Logger;
@@ -18,45 +17,12 @@ public class SendMessageProcessor implements DataProcessor {
     public void process(Datagram datagram, ClientThread thread) {
         Map<String,String> params=datagram.getParamsAsString();
         Msg msg= JSON.parseObject(params.get("msg"),Msg.class);
-
-        String msg_type=msg.getMsgType();
-        if(msg_type.equalsIgnoreCase(Msg.MSG_TYPE_NORMAL)){
-            log.info("收到普通消息，开始处理");
-            processNormal(datagram,thread);
-        }else if(msg_type.equalsIgnoreCase(Msg.MSG_TYPE_SECRET_1)){
-            log.info("收到1级私密消息，开始处理");
-            processSecret1(datagram,thread);
-        }
-    }
-
-    private void processSecret1(Datagram datagram,ClientThread thread){
-        Map<String,String> params=datagram.getParamsAsString();
-        Msg msg= JSON.parseObject(params.get("msg"),Msg.class);
-
-        SecretChat secretChat=ServerDataUtils.getSecretChat(msg.getDstUid());
-        if(secretChat==null){
-            thread.reportActionStatus(false,datagram.getIdentifier(),"对方id不存在",msg.getMsgId());
-            return;
-        }
-
-        String dstUid;
-        if(secretChat.getSrcUid().equals(thread.getCurrentUser().getId()))
-            dstUid=secretChat.getDstUid();
-        else
-           dstUid=secretChat.getSrcUid();
-
-        msg.setDstUid(dstUid);
-        msg.setSrcUid(secretChat.getSessionId());
-        msg.setTime(System.currentTimeMillis());
-        processMsg(msg,datagram,thread);
-    }
-
-    private void processNormal(Datagram datagram,ClientThread thread){
-        Map<String,String> params=datagram.getParamsAsString();
-        Msg msg= JSON.parseObject(params.get("msg"),Msg.class);
         msg.setSrcUid(thread.getCurrentUser().getId());
         processMsg(msg,datagram,thread);
+
+
     }
+
 
     private void processMsg(Msg msg,Datagram datagram,ClientThread thread){
         String msgId=msg.getMsgId();
@@ -67,18 +33,18 @@ public class SendMessageProcessor implements DataProcessor {
             return;
         }
 
-        if(ServerDataUtils.getUserInfoByUid(dstUid)==null){
+        if(thread.getDataUtils().getUserInfoByUid(dstUid)==null){
             thread.reportActionStatus(false,datagram.getIdentifier(),"对方id不存在",msgId);
             return;
         }
 
-        if(!ServerDataUtils.writeLocalMsgContent(msgId,msg.getContent())){
+        if(!thread.getDataUtils().writeLocalMsgContent(msgId,msg.getContent())){
             thread.reportActionStatus(false,datagram.getIdentifier(),"本地文件写入失败",msgId);
             return;
         }
 
-        msg=new Msg(msgId,msg.getSrcUid(),dstUid,null,msg.getMsgType(),System.currentTimeMillis());
-        if(ServerDataUtils.addMsg(msg)){
+        msg=new Msg(msgId,msg.getSrcUid(),dstUid,msg.getSessionId(),null,System.currentTimeMillis());
+        if(thread.getDataUtils().addMsg(msg)){
             log.debug("消息 "+msg+" 添加成功");
             thread.reportActionStatus(true,datagram.getIdentifier(),"",msgId);
             thread.remind(dstUid);

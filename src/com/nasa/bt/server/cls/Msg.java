@@ -4,25 +4,29 @@ public class Msg {
     private String msgId;
     private String srcUid;
     private String dstUid;
+    private String sessionId;
     private String content;
-    private String msgType;
     private long time;
 
-    public static final String MSG_TYPE_NORMAL="NORMAL";
-    public static final String MSG_TYPE_SECRET_1="SECRET_1";
-    public static final String MSG_TYPE_SECRET_6="SECRET_6";
-    public static final String MSG_TYPE_GROUP="GROUP";
 
     public Msg() {
     }
 
-    public Msg(String msgId, String srcUid, String dstUid, String content, String msgType, long time) {
+    public Msg(String msgId, String srcUid, String dstUid, String sessionId, String content, long time) {
         this.msgId = msgId;
         this.srcUid = srcUid;
         this.dstUid = dstUid;
+        this.sessionId = sessionId;
         this.content = content;
-        this.msgType = msgType;
         this.time = time;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 
     public String getMsgId() {
@@ -41,14 +45,6 @@ public class Msg {
         this.srcUid = srcUid;
     }
 
-    public String getDstUid() {
-        return dstUid;
-    }
-
-    public void setDstUid(String dstUid) {
-        this.dstUid = dstUid;
-    }
-
     public String getContent() {
         return content;
     }
@@ -65,12 +61,12 @@ public class Msg {
         this.time = time;
     }
 
-    public String getMsgType() {
-        return msgType;
+    public String getDstUid() {
+        return dstUid;
     }
 
-    public void setMsgType(String msgType) {
-        this.msgType = msgType;
+    public void setDstUid(String dstUid) {
+        this.dstUid = dstUid;
     }
 
     @Override
@@ -79,8 +75,8 @@ public class Msg {
                 "msgId='" + msgId + '\'' +
                 ", srcUid='" + srcUid + '\'' +
                 ", dstUid='" + dstUid + '\'' +
+                ", sessionId='" + sessionId + '\'' +
                 ", content='" + content + '\'' +
-                ", msgType='" + msgType + '\'' +
                 ", time=" + time +
                 '}';
     }

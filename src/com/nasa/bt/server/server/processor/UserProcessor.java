@@ -8,23 +8,10 @@ import com.nasa.bt.server.server.ClientThread;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GetUserProcessor implements DataProcessor {
-
-    private void getIndex(ClientThread thread){
-        String index=ServerDataUtils.getUserIndex();
-        Map<String,byte[]> returnParams=new HashMap<>();
-        returnParams.put("index",index.getBytes());
-
-        Datagram returnDatagram=new Datagram(Datagram.IDENTIFIER_RETURN_USERS_INDEX,returnParams);
-        thread.writeDatagram(returnDatagram);
-    }
+public class UserProcessor implements DataProcessor {
 
     @Override
     public void process(Datagram datagram, ClientThread thread) {
-        if(datagram.getIdentifier().equalsIgnoreCase(Datagram.IDENTIFIER_GET_USERS_INDEX)){
-            getIndex(thread);
-            return;
-        }
         Map<String,String> params=datagram.getParamsAsString();
         String uid=params.get("uid");
         String name=params.get("name");
@@ -35,9 +22,9 @@ public class GetUserProcessor implements DataProcessor {
 
         UserInfo info;
         if(uid!=null){
-            info= ServerDataUtils.getUserInfoByUid(uid);
+            info= thread.getDataUtils().getUserInfoByUid(uid);
         }else{
-            info=ServerDataUtils.getUserInfoByName(name);
+            info=thread.getDataUtils().getUserInfoByName(name);
         }
 
         Map<String,byte[]> returnParams=new HashMap<>();

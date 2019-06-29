@@ -20,23 +20,22 @@ public class DeleteMessageProcessor implements DataProcessor {
             //标记消息已读
             String srcUid=params.get("src_uid");
 
-            Msg msgReadMark=new Msg(UUIDUtils.getRandomUUID(),"system",srcUid,null,Msg.MSG_TYPE_NORMAL,System.currentTimeMillis());
-            ServerDataUtils.addMsg(msgReadMark);
-            ServerDataUtils.writeLocalMsgContent(msgReadMark.getMsgId(),msgId);
+            Msg msgReadMark=new Msg(UUIDUtils.getRandomUUID(),"system",srcUid,null,null,System.currentTimeMillis());
+            thread.getDataUtils().addMsg(msgReadMark);
+            thread.getDataUtils().writeLocalMsgContent(msgReadMark.getMsgId(),msgId);
             thread.remind(srcUid);
 
             return;
         }
 
-        Msg msg=ServerDataUtils.getMessageDetail(msgId);
-        if(msg==null || !msg.getDstUid().equals(thread.getCurrentUser().getId())){
+        if(!thread.getDataUtils().checkMsgPermission(msgId,thread.getCurrentUser().getId())){
             thread.reportActionStatus(false,datagram.getIdentifier(),"权限错误",msgId);
             return;
         }
 
 
 
-        if(ServerDataUtils.deleteMessage(msgId)){
+        if(thread.getDataUtils().deleteMessage(msgId)){
             thread.reportActionStatus(true,datagram.getIdentifier(),"",msgId);
         }else{
             thread.reportActionStatus(false,datagram.getIdentifier(),"",msgId);
