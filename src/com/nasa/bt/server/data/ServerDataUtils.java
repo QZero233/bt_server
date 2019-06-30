@@ -268,7 +268,7 @@ public class ServerDataUtils {
             if(!resultSet.first())
                 return null;
 
-            int sessionType=resultSet.getInt(resultSet.findColumn("sessionId"));
+            int sessionType=resultSet.getInt(resultSet.findColumn("sessionType"));
             String uidSrc=resultSet.getString(resultSet.findColumn("uidSrc"));
             String uidDst=resultSet.getString(resultSet.findColumn("uidDst"));
             String params=resultSet.getString(resultSet.findColumn("params"));
@@ -300,6 +300,26 @@ public class ServerDataUtils {
             return result;
         }catch (Exception e){
             log.error("在查询对话ID读取结果集时失败，用户ID "+uid,e);
+            return null;
+        }
+    }
+
+    /**
+     * 检查一个普通的会话是否存在
+     * @param uidAlpha UID1
+     * @param uidBeta UID2
+     * @return 存在返回ID，不存在返回null
+     */
+    public String checkNormalSessionExist(String uidAlpha,String uidBeta){
+        String sql="SELECT * FROM "+MysqlDbHelper.TAB_NAME_SESSIONS+" WHERE uidDst='"+uidAlpha+"' and uidSrc='"+uidBeta+"' and sessionType="+Session.TYPE_NORMAL+" " +
+                "or uidDst='"+uidBeta+"' and uidSrc='"+uidAlpha+"' and sessionType="+Session.TYPE_NORMAL;
+        ResultSet resultSet=helper.execSQLQuery(sql);
+        try{
+            if(!resultSet.first())
+                return null;
+            return resultSet.getString(resultSet.findColumn("sessionId"));
+        }catch (Exception e){
+            log.error("检查一个普通的会话是否存在读取结果集时错误",e);
             return null;
         }
     }

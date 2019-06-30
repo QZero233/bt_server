@@ -25,6 +25,8 @@ public class DeleteMessageProcessor implements DataProcessor {
             thread.getDataUtils().writeLocalMsgContent(msgReadMark.getMsgId(),msgId);
             thread.remind(srcUid);
 
+            thread.reportActionStatus(true,datagram.getIdentifier(),null,msgId);
+
             return;
         }
 

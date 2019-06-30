@@ -17,10 +17,18 @@ public class SessionProcessor implements DataProcessor {
         String uidDst=params.get("uid_dst");
         String paramsStr=params.get("params");
 
-        String sessionId= UUIDUtils.getRandomUUID();
-        int sessionType=Integer.parseInt(sessionTypeStr);
 
-        Session session=new Session(sessionId,sessionType,thread.getCurrentUser().getId(),uidDst,params);
+        int sessionType=Integer.parseInt(sessionTypeStr);
+        if(sessionType==Session.TYPE_NORMAL){
+            String sessionIdExists=thread.getDataUtils().checkNormalSessionExist(thread.getCurrentUser().getId(),uidDst);
+            if(sessionIdExists!=null){
+                thread.reportActionStatus(true,datagram.getIdentifier(),sessionIdExists,null);
+                return;
+            }
+        }
+
+        String sessionId= UUIDUtils.getRandomUUID();
+        Session session=new Session(sessionId,sessionType,thread.getCurrentUser().getId(),uidDst,paramsStr);
         if(thread.getDataUtils().insertSessionInfo(session)){
             thread.reportActionStatus(true,datagram.getIdentifier(),sessionId,null);
         }else{
@@ -48,7 +56,7 @@ public class SessionProcessor implements DataProcessor {
         }
 
         Map<String,String> returnValue=new HashMap<>();
-        returnValue.put("session", JSON.toJSONString(returnValue));
+        returnValue.put("session", JSON.toJSONString(session));
         Datagram datagramReturn=new Datagram(Datagram.IDENTIFIER_RETURN_SESSION_DETAIL,returnValue,null);
         thread.writeDatagram(datagramReturn);
     }

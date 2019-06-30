@@ -96,6 +96,14 @@ public class Session {
         return uidSrc;
     }
 
+    public boolean checkInSession(String uid){
+        if(uid==null)
+            return false;
+        if(!uid.equals(uidSrc) && !uid.equals(uidDst))
+            return false;
+        return true;
+    }
+
     @Override
     public String toString() {
         return "Session{" +

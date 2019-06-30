@@ -3,6 +3,7 @@ package com.nasa.bt.server.server.processor;
 import com.alibaba.fastjson.JSON;
 import com.nasa.bt.server.cls.Datagram;
 import com.nasa.bt.server.cls.Msg;
+import com.nasa.bt.server.cls.Session;
 import com.nasa.bt.server.data.ServerDataUtils;
 import com.nasa.bt.server.server.ClientThread;
 import org.apache.log4j.Logger;
@@ -18,15 +19,18 @@ public class SendMessageProcessor implements DataProcessor {
         Map<String,String> params=datagram.getParamsAsString();
         Msg msg= JSON.parseObject(params.get("msg"),Msg.class);
         msg.setSrcUid(thread.getCurrentUser().getId());
-        processMsg(msg,datagram,thread);
 
-
-    }
-
-
-    private void processMsg(Msg msg,Datagram datagram,ClientThread thread){
         String msgId=msg.getMsgId();
-        String dstUid=msg.getDstUid();
+
+        Session session=thread.getDataUtils().querySessionInfo(msg.getSessionId());
+        if(session==null)
+            return;
+        if(!session.checkInSession(thread.getCurrentUser().getId())){
+            thread.reportActionStatus(false,datagram.getIdentifier(),"不在会话中",msgId);
+            return;
+        }
+
+        String dstUid=session.getIdOfOther(thread.getCurrentUser().getId());
 
         if(dstUid.equalsIgnoreCase(thread.getCurrentUser().getId())){
             thread.reportActionStatus(false,datagram.getIdentifier(),"不能给自己发消息",msgId);
@@ -52,5 +56,7 @@ public class SendMessageProcessor implements DataProcessor {
             thread.reportActionStatus(false,datagram.getIdentifier(),"写入数据库失败",msgId);
         }
     }
+
+
 
 }
