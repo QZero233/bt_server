@@ -2,7 +2,8 @@ package com.nasa.bt.server.server.processor;
 
 import com.alibaba.fastjson.JSON;
 import com.nasa.bt.server.cls.Datagram;
-import com.nasa.bt.server.cls.Session;
+import com.nasa.bt.server.data.dao.SessionDao;
+import com.nasa.bt.server.data.entity.SessionEntity;
 import com.nasa.bt.server.server.ClientThread;
 import com.nasa.bt.server.utils.UUIDUtils;
 
@@ -10,6 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SessionProcessor implements DataProcessor {
+
+    private SessionDao sessionDao;
 
     private void createSession(Datagram datagram,ClientThread thread){
         Map<String,String> params=datagram.getParamsAsString();
@@ -19,8 +22,8 @@ public class SessionProcessor implements DataProcessor {
 
 
         int sessionType=Integer.parseInt(sessionTypeStr);
-        if(sessionType==Session.TYPE_NORMAL){
-            String sessionIdExists=thread.getDataUtils().checkNormalSessionExist(thread.getCurrentUser().getId(),uidDst);
+        if(sessionType == SessionEntity.TYPE_NORMAL){
+            String sessionIdExists=sessionDao.getExistNormalSession(thread.getCurrentUser().getId(),uidDst);
             if(sessionIdExists!=null){
                 thread.reportActionStatus(true,datagram.getIdentifier(),sessionIdExists,null);
                 return;
@@ -28,8 +31,8 @@ public class SessionProcessor implements DataProcessor {
         }
 
         String sessionId= UUIDUtils.getRandomUUID();
-        Session session=new Session(sessionId,sessionType,thread.getCurrentUser().getId(),uidDst,paramsStr);
-        if(thread.getDataUtils().insertSessionInfo(session)){
+        SessionEntity session=new SessionEntity(sessionId,sessionType,thread.getCurrentUser().getId(),uidDst,paramsStr);
+        if(sessionDao.addSession(session)){
             thread.reportActionStatus(true,datagram.getIdentifier(),sessionId,null);
         }else{
             thread.reportActionStatus(false,datagram.getIdentifier(),null,null);
@@ -37,7 +40,8 @@ public class SessionProcessor implements DataProcessor {
     }
 
     private void getSessionsId(ClientThread thread){
-        String id=thread.getDataUtils().querySessionsId(thread.getCurrentUser().getId());
+
+        String id=sessionDao.getSessionIndexes(thread.getCurrentUser().getId());
 
         Map<String,String> returnValue=new HashMap<>();
         returnValue.put("session_id",id);
@@ -49,7 +53,8 @@ public class SessionProcessor implements DataProcessor {
         Map<String,String> params=datagram.getParamsAsString();
         String sessionId=params.get("session_id");
 
-        Session session=thread.getDataUtils().querySessionInfo(sessionId);
+        SessionEntity session=sessionDao.getSession(sessionId);
+
         if(session==null){
             thread.reportActionStatus(false,datagram.getIdentifier(),null,null);
             return;
@@ -63,6 +68,8 @@ public class SessionProcessor implements DataProcessor {
 
     @Override
     public void process(Datagram datagram, ClientThread thread) {
+        sessionDao=thread.getSessionDao();
+
         String identifier=datagram.getIdentifier();
         if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_CREATE_SESSION)){
             createSession(datagram,thread);
@@ -74,5 +81,12 @@ public class SessionProcessor implements DataProcessor {
             getSessionDetail(datagram,thread);
             return;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "SessionProcessor{" +
+                "sessionDao=" + sessionDao +
+                '}';
     }
 }

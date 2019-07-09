@@ -1,7 +1,5 @@
 package com.nasa.bt.server.cls;
 
-import com.nasa.bt.server.data.MysqlDbHelper;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -140,9 +138,13 @@ public class Datagram {
         Set<String> keys=params.keySet();
         for(String key:keys){
             //进行SQL安全检测
-            result.put(key, MysqlDbHelper.sqlSecurity(new String(params.get(key))));
+            result.put(key, sqlSecurity(new String(params.get(key))));
         }
         return result;
+    }
+
+    private static String sqlSecurity(String origin){
+        return origin.replaceAll("'","");
     }
 
     @Override

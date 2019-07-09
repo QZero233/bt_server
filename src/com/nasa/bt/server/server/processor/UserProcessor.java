@@ -1,8 +1,8 @@
 package com.nasa.bt.server.server.processor;
 
 import com.nasa.bt.server.cls.Datagram;
-import com.nasa.bt.server.cls.UserInfo;
-import com.nasa.bt.server.data.ServerDataUtils;
+import com.nasa.bt.server.data.dao.UserInfoDao;
+import com.nasa.bt.server.data.entity.UserInfoEntity;
 import com.nasa.bt.server.server.ClientThread;
 
 import java.util.HashMap;
@@ -10,8 +10,11 @@ import java.util.Map;
 
 public class UserProcessor implements DataProcessor {
 
+    private UserInfoDao userInfoDao;
+
     @Override
     public void process(Datagram datagram, ClientThread thread) {
+        userInfoDao=thread.getUserInfoDao();
         Map<String,String> params=datagram.getParamsAsString();
         String uid=params.get("uid");
         String name=params.get("name");
@@ -20,19 +23,19 @@ public class UserProcessor implements DataProcessor {
             return;
         }
 
-        UserInfo info;
+        UserInfoEntity userInfoEntity;
         if(uid!=null){
-            info= thread.getDataUtils().getUserInfoByUid(uid);
+            userInfoEntity=userInfoDao.getUserInfoByUid(uid);
         }else{
-            info=thread.getDataUtils().getUserInfoByName(name);
+            userInfoEntity=userInfoDao.getUserInfoByName(name);
         }
 
         Map<String,byte[]> returnParams=new HashMap<>();
-        if(info==null){
+        if(userInfoEntity==null){
             returnParams.put("exist","0".getBytes());
         }else{
-            returnParams.put("uid",info.getId().getBytes());
-            returnParams.put("name",info.getName().getBytes());
+            returnParams.put("uid",userInfoEntity.getId().getBytes());
+            returnParams.put("name",userInfoEntity.getName().getBytes());
             returnParams.put("exist","1".getBytes());
         }
 

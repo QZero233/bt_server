@@ -1,8 +1,8 @@
 package com.nasa.bt.server.server.processor;
 
 import com.nasa.bt.server.cls.Datagram;
-import com.nasa.bt.server.cls.Msg;
-import com.nasa.bt.server.data.ServerDataUtils;
+import com.nasa.bt.server.data.dao.TempMessageDao;
+import com.nasa.bt.server.data.entity.TempMessageEntity;
 import com.nasa.bt.server.server.ClientThread;
 import com.nasa.bt.server.utils.UUIDUtils;
 
@@ -11,8 +11,12 @@ import java.util.Map;
 @DatagramProcessor(identifier=Datagram.IDENTIFIER_DELETE_MESSAGE)
 public class DeleteMessageProcessor implements DataProcessor {
 
+    private TempMessageDao tempMessageDao;
+
     @Override
     public void process(Datagram datagram, ClientThread thread) {
+        tempMessageDao=thread.getTempMessageDao();
+
         Map<String,String> params=datagram.getParamsAsString();
         String msgId=params.get("msg_id");
 
@@ -20,9 +24,8 @@ public class DeleteMessageProcessor implements DataProcessor {
             //标记消息已读
             String srcUid=params.get("src_uid");
 
-            Msg msgReadMark=new Msg(UUIDUtils.getRandomUUID(),"system",srcUid,null,null,System.currentTimeMillis());
-            thread.getDataUtils().addMsg(msgReadMark);
-            thread.getDataUtils().writeLocalMsgContent(msgReadMark.getMsgId(),msgId);
+            TempMessageEntity msgReadMark=new TempMessageEntity(UUIDUtils.getRandomUUID(),"system",srcUid,"",System.currentTimeMillis(),msgId);
+            tempMessageDao.addTempMessage(msgReadMark);
             thread.remind(srcUid);
 
             thread.reportActionStatus(true,datagram.getIdentifier(),null,msgId);
@@ -30,17 +33,10 @@ public class DeleteMessageProcessor implements DataProcessor {
             return;
         }
 
-        if(!thread.getDataUtils().checkMsgPermission(msgId,thread.getCurrentUser().getId())){
-            thread.reportActionStatus(false,datagram.getIdentifier(),"权限错误",msgId);
-            return;
-        }
-
-
-
-        if(thread.getDataUtils().deleteMessage(msgId)){
-            thread.reportActionStatus(true,datagram.getIdentifier(),"",msgId);
+        if(tempMessageDao.deleteMessage(msgId)){
+            thread.reportActionStatus(true,datagram.getIdentifier(),null,msgId);
         }else{
-            thread.reportActionStatus(false,datagram.getIdentifier(),"",msgId);
+            thread.reportActionStatus(false,datagram.getIdentifier(),null,msgId);
         }
     }
 }

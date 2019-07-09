@@ -2,22 +2,25 @@ package com.nasa.bt.server.server.processor;
 
 import com.alibaba.fastjson.JSON;
 import com.nasa.bt.server.cls.Datagram;
-import com.nasa.bt.server.cls.Msg;
-import com.nasa.bt.server.cls.Session;
-import com.nasa.bt.server.data.ServerDataUtils;
+import com.nasa.bt.server.data.dao.TempMessageDao;
+import com.nasa.bt.server.data.entity.TempMessageEntity;
 import com.nasa.bt.server.server.ClientThread;
-import com.nasa.bt.server.server.SocketIOHelper;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class GetMessageProcessor implements DataProcessor {
+
+    private TempMessageDao tempMessageDao;
+
     @Override
     public void process(Datagram datagram, ClientThread thread) {
+        tempMessageDao=thread.getTempMessageDao();
+
         Map<String,byte[]> returnParams=new HashMap<>();
         if(datagram.getIdentifier().equalsIgnoreCase(Datagram.IDENTIFIER_GET_MESSAGE_INDEX)){
             //获取索引
-            String index= thread.getDataUtils().getMessageIndex(thread.getCurrentUser().getId());
+            String index= tempMessageDao.getUnreadMessageIndexes(thread.getCurrentUser().getId());
             returnParams.put("index",index.getBytes());
             Datagram returnDatagram=new Datagram(Datagram.IDENTIFIER_RETURN_MESSAGE_INDEX,returnParams);
             thread.writeDatagram(returnDatagram);
@@ -26,7 +29,8 @@ public class GetMessageProcessor implements DataProcessor {
             Map<String,String> params=datagram.getParamsAsString();
             String msgId=params.get("msg_id");
 
-            Msg msg=thread.getDataUtils().getMessageDetail(msgId);
+            TempMessageEntity msg=tempMessageDao.getMessage(msgId);
+
             if(msg==null){
                 thread.reportActionStatus(false,datagram.getIdentifier(),"获取消息具体内容失败",msgId);
                 return;

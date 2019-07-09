@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <property name="connection.url">jdbc:mysql://127.0.0.1:3306/bt?serverTimezone=GMT%2B8</property>
+        <property name="connection.username">bt</property>
+        <property name="connection.password">bt</property>
+        <property name="show_sql">true</property>
+        <property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+
+
+        <mapping class="com.nasa.bt.server.data.entity.SessionEntity"/>
+        <mapping class="com.nasa.bt.server.data.entity.TempMessageEntity"/>
+        <mapping class="com.nasa.bt.server.data.entity.UserAuthInfoEntity"/>
+        <mapping class="com.nasa.bt.server.data.entity.UserInfoEntity"/>
+
+
+        <!-- DB schema will be updated if needed -->
+        <!-- <property name="hibernate.hbm2ddl.auto">update</property> -->
+
+        <!--
+        <property name="connection.username">bt</property>
+        <property name="connection.password">bt</property>
+        -->
+
+    </session-factory>
+
+</hibernate-configuration>

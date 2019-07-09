@@ -3,10 +3,12 @@ package com.nasa.bt.server.server;
 import com.alibaba.fastjson.JSON;
 import com.nasa.bt.server.cls.ActionReport;
 import com.nasa.bt.server.cls.Datagram;
-import com.nasa.bt.server.cls.UserInfo;
 import com.nasa.bt.server.crypt.CryptModuleRSA;
-import com.nasa.bt.server.data.MysqlDbHelper;
 import com.nasa.bt.server.data.ServerDataUtils;
+import com.nasa.bt.server.data.dao.SessionDao;
+import com.nasa.bt.server.data.dao.TempMessageDao;
+import com.nasa.bt.server.data.dao.UserInfoDao;
+import com.nasa.bt.server.data.entity.UserInfoEntity;
 import com.nasa.bt.server.server.processor.DataProcessor;
 import com.nasa.bt.server.server.processor.DataProcessorFactory;
 import org.apache.log4j.Logger;
@@ -27,15 +29,16 @@ public class ClientThread extends Thread {
     private SocketIOHelper helper;
     private ServerManager parent;
 
-    private UserInfo currentUser=null;
+    private UserInfoEntity currentUser=null;
 
-    private ServerDataUtils dataUtils;
+    private SessionDao sessionDao=new SessionDao();
+    private TempMessageDao tempMessageDao=new TempMessageDao();
+    private UserInfoDao userInfoDao=new UserInfoDao();
 
     public ClientThread(Socket socket, ServerManager parent) {
         this.socket = socket;
         this.parent = parent;
         try {
-            dataUtils=new ServerDataUtils();
             helper=new SocketIOHelper(socket.getInputStream(),socket.getOutputStream());
             helper.setPrivateKey(CryptModuleRSA.SERVER_PRI_KEY);
             log.info("新客户端连接成功");
@@ -107,13 +110,17 @@ public class ClientThread extends Thread {
         return helper.writeOs(datagram);
     }
 
-    public UserInfo getCurrentUser(){
+    public UserInfoEntity getCurrentUser(){
         return currentUser;
     }
 
-    public void setCurrentUser(UserInfo currentUser) {
+    public void setCurrentUser(UserInfoEntity currentUser) {
         this.currentUser = currentUser;
         parent.addClient(this,currentUser.getId());
+
+        sessionDao.setCurrentUser(currentUser);
+        tempMessageDao.setCurrentUser(currentUser);
+
         log.info("用户 "+currentUser.getId()+" 登录成功");
     }
 
@@ -129,7 +136,15 @@ public class ClientThread extends Thread {
         }
     }
 
-    public ServerDataUtils getDataUtils() {
-        return dataUtils;
+    public SessionDao getSessionDao() {
+        return sessionDao;
+    }
+
+    public TempMessageDao getTempMessageDao() {
+        return tempMessageDao;
+    }
+
+    public UserInfoDao getUserInfoDao() {
+        return userInfoDao;
     }
 }
