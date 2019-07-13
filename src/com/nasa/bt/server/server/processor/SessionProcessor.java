@@ -82,11 +82,4 @@ public class SessionProcessor implements DataProcessor {
             return;
         }
     }
-
-    @Override
-    public String toString() {
-        return "SessionProcessor{" +
-                "sessionDao=" + sessionDao +
-                '}';
-    }
 }
