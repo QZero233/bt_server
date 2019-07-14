@@ -8,7 +8,6 @@ import com.nasa.bt.server.utils.UUIDUtils;
 
 import java.util.Map;
 
-@DatagramProcessor(identifier=Datagram.IDENTIFIER_DELETE_MESSAGE)
 public class DeleteMessageProcessor implements DataProcessor {
 
     private TempMessageDao tempMessageDao;

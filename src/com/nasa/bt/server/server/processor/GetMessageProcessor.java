@@ -2,6 +2,7 @@ package com.nasa.bt.server.server.processor;
 
 import com.alibaba.fastjson.JSON;
 import com.nasa.bt.server.cls.Datagram;
+import com.nasa.bt.server.cls.ParamBuilder;
 import com.nasa.bt.server.data.dao.TempMessageDao;
 import com.nasa.bt.server.data.entity.TempMessageEntity;
 import com.nasa.bt.server.server.ClientThread;
@@ -17,12 +18,11 @@ public class GetMessageProcessor implements DataProcessor {
     public void process(Datagram datagram, ClientThread thread) {
         tempMessageDao=thread.getTempMessageDao();
 
-        Map<String,byte[]> returnParams=new HashMap<>();
-        if(datagram.getIdentifier().equalsIgnoreCase(Datagram.IDENTIFIER_GET_MESSAGE_INDEX)){
+
+        if(datagram.getIdentifier().equalsIgnoreCase(Datagram.IDENTIFIER_MESSAGE_INDEX)){
             //获取索引
             String index= tempMessageDao.getUnreadMessageIndexes(thread.getCurrentUser().getId());
-            returnParams.put("index",index.getBytes());
-            Datagram returnDatagram=new Datagram(Datagram.IDENTIFIER_RETURN_MESSAGE_INDEX,returnParams);
+            Datagram returnDatagram=new Datagram(Datagram.IDENTIFIER_MESSAGE_INDEX,new ParamBuilder().putParam("index",index).build());
             thread.writeDatagram(returnDatagram);
         }else{
             //获取具体消息
@@ -41,9 +41,7 @@ public class GetMessageProcessor implements DataProcessor {
                 return;
             }
 
-            returnParams.put("msg", JSON.toJSONString(msg).getBytes());
-
-            Datagram returnDatagram=new Datagram(Datagram.IDENTIFIER_RETURN_MESSAGE_DETAIL,returnParams);
+            Datagram returnDatagram=new Datagram(Datagram.IDENTIFIER_MESSAGE_DETAIL,new ParamBuilder().putParam("msg", JSON.toJSONString(msg)).build());
             thread.writeDatagram(returnDatagram);
         }
     }

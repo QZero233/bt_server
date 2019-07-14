@@ -7,6 +7,7 @@
         <property name="connection.url">jdbc:mysql://127.0.0.1:3306/bt?serverTimezone=GMT%2B8</property>
         <property name="connection.username">bt</property>
         <property name="connection.password">bt</property>
+        <property name="hibernate.hbm2ddl.auto">update</property>
         <property name="show_sql">true</property>
         <property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
 
@@ -15,6 +16,7 @@
         <mapping class="com.nasa.bt.server.data.entity.TempMessageEntity"/>
         <mapping class="com.nasa.bt.server.data.entity.UserAuthInfoEntity"/>
         <mapping class="com.nasa.bt.server.data.entity.UserInfoEntity"/>
+        <mapping class="com.nasa.bt.server.data.entity.UpdateEntity" />
 
 
         <!-- DB schema will be updated if needed -->

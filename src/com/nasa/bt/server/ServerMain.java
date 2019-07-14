@@ -1,7 +1,9 @@
 package com.nasa.bt.server;
 
+import com.nasa.bt.server.data.ConfigurationInstance;
 import com.nasa.bt.server.server.ServerManager;
 import org.apache.log4j.Logger;
+import org.hibernate.Session;
 
 /**
  * 服务器运行类
@@ -21,8 +23,11 @@ public class ServerMain {
          * 4.思考许久...
          * 5.IDEA 关闭 bilibili 启动
          */
+        logger.info("正在初始化数据库连接");
+        Session session= ConfigurationInstance.openSession();
+        session.close();
+        logger.info("数据库连接初始化完成");
 
         ServerManager manager=ServerManager.getInstance();
-        logger.info("服务器已启动......");
     }
 }

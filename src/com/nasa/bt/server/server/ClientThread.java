@@ -3,10 +3,12 @@ package com.nasa.bt.server.server;
 import com.alibaba.fastjson.JSON;
 import com.nasa.bt.server.cls.ActionReport;
 import com.nasa.bt.server.cls.Datagram;
+import com.nasa.bt.server.cls.ParamBuilder;
 import com.nasa.bt.server.crypt.CryptModuleRSA;
 import com.nasa.bt.server.data.ServerDataUtils;
 import com.nasa.bt.server.data.dao.SessionDao;
 import com.nasa.bt.server.data.dao.TempMessageDao;
+import com.nasa.bt.server.data.dao.UpdateDao;
 import com.nasa.bt.server.data.dao.UserInfoDao;
 import com.nasa.bt.server.data.entity.UserInfoEntity;
 import com.nasa.bt.server.server.processor.DataProcessor;
@@ -34,6 +36,7 @@ public class ClientThread extends Thread {
     private SessionDao sessionDao=new SessionDao();
     private TempMessageDao tempMessageDao=new TempMessageDao();
     private UserInfoDao userInfoDao=new UserInfoDao();
+    private UpdateDao updateDao=new UpdateDao();
 
     public ClientThread(Socket socket, ServerManager parent) {
         this.socket = socket;
@@ -99,10 +102,7 @@ public class ClientThread extends Thread {
 
         ActionReport report=new ActionReport(statusStr,identifier,replyId,more);
 
-        Map<String,String> params=new HashMap<>();
-        params.put("action_report", JSON.toJSONString(report));
-
-        Datagram datagram=new Datagram(Datagram.IDENTIFIER_REPORT,params,"");
+        Datagram datagram=new Datagram(Datagram.IDENTIFIER_REPORT,new ParamBuilder().putParam("action_report",JSON.toJSONString(report)).build());
         helper.writeOs(datagram);
     }
 
@@ -120,6 +120,7 @@ public class ClientThread extends Thread {
 
         sessionDao.setCurrentUser(currentUser);
         tempMessageDao.setCurrentUser(currentUser);
+        updateDao.setCurrentUser(currentUser);
 
         log.info("用户 "+currentUser.getId()+" 登录成功");
     }
@@ -146,5 +147,9 @@ public class ClientThread extends Thread {
 
     public UserInfoDao getUserInfoDao() {
         return userInfoDao;
+    }
+
+    public UpdateDao getUpdateDao() {
+        return updateDao;
     }
 }

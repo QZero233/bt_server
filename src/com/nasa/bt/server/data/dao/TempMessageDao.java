@@ -9,6 +9,7 @@ import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TempMessageDao {
@@ -60,7 +61,6 @@ public class TempMessageDao {
 
         TempMessageEntity result= (TempMessageEntity) obj;
 
-
         if(!checkMessagePermission(result))
             return null;
 
@@ -83,6 +83,15 @@ public class TempMessageDao {
         if(session.getTransaction().getStatus().equals(TransactionStatus.COMMITTED) && ServerDataUtils.deleteLocalMsgContent(msgId))
             return true;
         return false;
+    }
+
+    public List<TempMessageEntity> getAllUnreadMessage(String uid){
+        String id=getUnreadMessageIndexes(uid);
+        List<TempMessageEntity> result=new ArrayList<>();
+        for(int i=0;i<id.length()/36;i++){
+            result.add(getMessage(id.substring(i*36,(i+1)*36)));
+        }
+        return result;
     }
 
     private boolean checkMessagePermission(TempMessageEntity messageEntity){

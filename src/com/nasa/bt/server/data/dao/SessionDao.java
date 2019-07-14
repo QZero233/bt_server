@@ -33,11 +33,8 @@ public class SessionDao {
     public SessionEntity getSession(String sessionId){
         Query query=session.createQuery("from SessionEntity where sessionId=?1");
         query.setParameter(1,sessionId);
-        Object obj=query.uniqueResult();
-        if(obj==null)
-            return null;
 
-        SessionEntity sessionEntity= (SessionEntity) obj;
+        SessionEntity sessionEntity= (SessionEntity) query.uniqueResult();
 
         if(!checkSessionPermission(sessionEntity))
             return null;
@@ -98,5 +95,11 @@ public class SessionDao {
 
     public void setCurrentUser(UserInfoEntity currentUser) {
         this.currentUser = currentUser;
+    }
+
+    public List<SessionEntity> getAllSession(String uid){
+        Query query=session.createQuery("from SessionEntity where srcUid=?1 or dstUid=?1");
+        query.setParameter(1,uid);
+        return query.list();
     }
 }

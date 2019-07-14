@@ -2,9 +2,11 @@ package com.nasa.bt.server.server;
 
 import com.nasa.bt.server.ServerMain;
 import com.nasa.bt.server.cls.Datagram;
+import com.nasa.bt.server.cls.ParamBuilder;
 import com.nasa.bt.server.cls.ServerProperties;
 import com.nasa.bt.server.data.ServerDataUtils;
 import com.nasa.bt.server.data.dao.TempMessageDao;
+import com.nasa.bt.server.data.dao.UpdateDao;
 import com.nasa.bt.server.server.processor.DataProcessorFactory;
 import org.apache.log4j.Logger;
 
@@ -83,7 +85,7 @@ public class ServerManager {
             clients.get(uid).terminate();
         }
         clients.put(uid,thread);
-        remind(uid);
+        //remind(uid);
     }
 
     public void removeClient(String uid){
@@ -104,11 +106,15 @@ public class ServerManager {
                 @Override
                 public void run() {
                     super.run();
-                    Map<String,byte[]> returnParams=new HashMap<>();
-                    String index= new TempMessageDao().getUnreadMessageIndexes(uid);
-                    returnParams.put("index",index.getBytes());
-                    Datagram returnDatagram=new Datagram(Datagram.IDENTIFIER_RETURN_MESSAGE_INDEX,returnParams);
-                    clients.get(uid).writeDatagram(returnDatagram);
+
+                    String messageIndex= new TempMessageDao().getUnreadMessageIndexes(uid);
+                    Datagram messageDatagram=new Datagram(Datagram.IDENTIFIER_MESSAGE_INDEX,new ParamBuilder().putParam("index",messageIndex).build());
+
+                    String updateIndex=new UpdateDao().getUpdateIndexes(uid);
+                    Datagram updateDatagram=new Datagram(Datagram.IDENTIFIER_UPDATE_INDEX,new ParamBuilder().putParam("update_id",updateIndex).build());
+
+                    clients.get(uid).writeDatagram(messageDatagram);
+                    clients.get(uid).writeDatagram(updateDatagram);
                 }
             }.start();
         }

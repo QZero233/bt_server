@@ -19,16 +19,20 @@ public class DataProcessorFactory {
             return new SignInProcessor();
         else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_SEND_MESSAGE))
             return new SendMessageProcessor();
-        else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_GET_MESSAGE_INDEX) || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_GET_MESSAGE_DETAIL))
+        else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_MESSAGE_INDEX) || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_MESSAGE_DETAIL))
             return new GetMessageProcessor();
         else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_DELETE_MESSAGE) || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_MARK_READ))
             return new DeleteMessageProcessor();
-        else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_GET_USER_INFO))
+        else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_USER_INFO))
             return new UserProcessor();
-        else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_CREATE_SESSION) || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_GET_SESSION_DETAIL) ||
-        identifier.equalsIgnoreCase(Datagram.IDENTIFIER_GET_SESSIONS_INDEX))
+        else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_CREATE_SESSION) || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_SESSION_DETAIL) ||
+        identifier.equalsIgnoreCase(Datagram.IDENTIFIER_SESSIONS_INDEX) || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_DELETE_SESSION))
             return new SessionProcessor();
-
+        else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_REFRESH))
+            return new RefreshProcessor();
+        else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_UPDATE_INDEX) || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_UPDATE_DETAIL)
+                || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_DELETE_UPDATE))
+            return new UpdateProcessor();
 
         return null;
     }

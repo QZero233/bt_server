@@ -1,6 +1,7 @@
 package com.nasa.bt.server.server.processor;
 
 import com.nasa.bt.server.cls.Datagram;
+import com.nasa.bt.server.cls.ParamBuilder;
 import com.nasa.bt.server.data.dao.UserInfoDao;
 import com.nasa.bt.server.data.entity.UserInfoEntity;
 import com.nasa.bt.server.server.ClientThread;
@@ -30,16 +31,16 @@ public class UserProcessor implements DataProcessor {
             userInfoEntity=userInfoDao.getUserInfoByName(name);
         }
 
-        Map<String,byte[]> returnParams=new HashMap<>();
+        ParamBuilder paramBuilder=new ParamBuilder();
         if(userInfoEntity==null){
-            returnParams.put("exist","0".getBytes());
+            paramBuilder.putParam("exist","0");
         }else{
-            returnParams.put("uid",userInfoEntity.getId().getBytes());
-            returnParams.put("name",userInfoEntity.getName().getBytes());
-            returnParams.put("exist","1".getBytes());
+            paramBuilder.putParam("uid",userInfoEntity.getId());
+            paramBuilder.putParam("name",userInfoEntity.getName());
+            paramBuilder.putParam("exist","1");
         }
 
-        Datagram returnDatagram=new Datagram(Datagram.IDENTIFIER_RETURN_USER_INFO,returnParams);
+        Datagram returnDatagram=new Datagram(Datagram.IDENTIFIER_USER_INFO,paramBuilder.build());
         thread.writeDatagram(returnDatagram);
     }
 }

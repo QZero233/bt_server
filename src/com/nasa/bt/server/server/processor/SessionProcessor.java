@@ -2,8 +2,11 @@ package com.nasa.bt.server.server.processor;
 
 import com.alibaba.fastjson.JSON;
 import com.nasa.bt.server.cls.Datagram;
+import com.nasa.bt.server.cls.ParamBuilder;
 import com.nasa.bt.server.data.dao.SessionDao;
+import com.nasa.bt.server.data.dao.UpdateDao;
 import com.nasa.bt.server.data.entity.SessionEntity;
+import com.nasa.bt.server.data.entity.UpdateEntity;
 import com.nasa.bt.server.server.ClientThread;
 import com.nasa.bt.server.utils.UUIDUtils;
 
@@ -13,6 +16,7 @@ import java.util.Map;
 public class SessionProcessor implements DataProcessor {
 
     private SessionDao sessionDao;
+    private UpdateDao updateDao;
 
     private void createSession(Datagram datagram,ClientThread thread){
         Map<String,String> params=datagram.getParamsAsString();
@@ -37,15 +41,18 @@ public class SessionProcessor implements DataProcessor {
         }else{
             thread.reportActionStatus(false,datagram.getIdentifier(),null,null);
         }
+
+        UpdateEntity updateEntity=new UpdateEntity(UUIDUtils.getRandomUUID(),thread.getCurrentUser().getId(),uidDst,UpdateEntity.TYPE_SESSION_CREATE,System.currentTimeMillis()
+        ,sessionId);
+        updateDao.addUpdate(updateEntity);
+        thread.remind(uidDst);
     }
 
     private void getSessionsId(ClientThread thread){
-
         String id=sessionDao.getSessionIndexes(thread.getCurrentUser().getId());
 
-        Map<String,String> returnValue=new HashMap<>();
-        returnValue.put("session_id",id);
-        Datagram datagramReturn=new Datagram(Datagram.IDENTIFIER_RETURN_SESSIONS_INDEX,returnValue,null);
+
+        Datagram datagramReturn=new Datagram(Datagram.IDENTIFIER_SESSIONS_INDEX,new ParamBuilder().putParam("session_id",id).build());
         thread.writeDatagram(datagramReturn);
     }
 
@@ -60,25 +67,51 @@ public class SessionProcessor implements DataProcessor {
             return;
         }
 
-        Map<String,String> returnValue=new HashMap<>();
-        returnValue.put("session", JSON.toJSONString(session));
-        Datagram datagramReturn=new Datagram(Datagram.IDENTIFIER_RETURN_SESSION_DETAIL,returnValue,null);
+        Datagram datagramReturn=new Datagram(Datagram.IDENTIFIER_SESSION_DETAIL,new ParamBuilder().putParam("session", JSON.toJSONString(session)).build());
         thread.writeDatagram(datagramReturn);
+    }
+
+    private void deleteSession(Datagram datagram, ClientThread thread){
+        Map<String,String> params=datagram.getParamsAsString();
+        String sessionId=params.get("session_id");
+
+        SessionEntity sessionEntity=sessionDao.getSession(sessionId);
+        if(sessionEntity==null){
+            thread.reportActionStatus(false,datagram.getIdentifier(),null,null);
+            return;
+        }
+
+        String uidDst=sessionEntity.getIdOfOther(thread.getCurrentUser().getId());
+
+        if(sessionDao.deleteSession(sessionId)){
+            thread.reportActionStatus(true,datagram.getIdentifier(),null,null);
+        }else{
+            thread.reportActionStatus(false,datagram.getIdentifier(),null,null);
+        }
+
+        UpdateEntity updateEntity=new UpdateEntity(UUIDUtils.getRandomUUID(),thread.getCurrentUser().getId(),uidDst,UpdateEntity.TYPE_SESSION_DELETE,System.currentTimeMillis()
+                ,sessionId);
+        updateDao.addUpdate(updateEntity);
+        thread.remind(uidDst);
     }
 
     @Override
     public void process(Datagram datagram, ClientThread thread) {
         sessionDao=thread.getSessionDao();
+        updateDao=thread.getUpdateDao();
 
         String identifier=datagram.getIdentifier();
         if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_CREATE_SESSION)){
             createSession(datagram,thread);
             return;
-        }else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_GET_SESSIONS_INDEX)){
+        }else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_SESSIONS_INDEX)){
             getSessionsId(thread);
             return;
-        }else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_GET_SESSION_DETAIL)){
+        }else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_SESSION_DETAIL)){
             getSessionDetail(datagram,thread);
+            return;
+        }else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_DELETE_SESSION)){
+            deleteSession(datagram,thread);
             return;
         }
     }
