@@ -56,7 +56,7 @@ public class SessionProcessor implements DataProcessor {
         thread.writeDatagram(datagramReturn);
     }
 
-    private void getSessionDetail(Datagram datagram,ClientThread thread){
+    private SessionEntity getSession(Datagram datagram,ClientThread thread){
         Map<String,String> params=datagram.getParamsAsString();
         String sessionId=params.get("session_id");
 
@@ -64,22 +64,52 @@ public class SessionProcessor implements DataProcessor {
 
         if(session==null){
             thread.reportActionStatus(false,datagram.getIdentifier(),null,null);
-            return;
+            return null;
         }
+
+        return session;
+    }
+
+    private void getSessionDetail(Datagram datagram,ClientThread thread){
+        SessionEntity session=getSession(datagram,thread);
+        if(session==null)
+            return;
 
         Datagram datagramReturn=new Datagram(Datagram.IDENTIFIER_SESSION_DETAIL,new ParamBuilder().putParam("session", JSON.toJSONString(session)).build());
         thread.writeDatagram(datagramReturn);
     }
 
-    private void deleteSession(Datagram datagram, ClientThread thread){
+    private void updateSession(Datagram datagram, ClientThread thread){
         Map<String,String> params=datagram.getParamsAsString();
         String sessionId=params.get("session_id");
+        String newParams=params.get("params");
 
         SessionEntity sessionEntity=sessionDao.getSession(sessionId);
         if(sessionEntity==null){
             thread.reportActionStatus(false,datagram.getIdentifier(),null,null);
             return;
         }
+
+        sessionEntity.setParams(newParams);
+        if(!sessionDao.updateSession(sessionEntity))
+            thread.reportActionStatus(false,datagram.getIdentifier(),null,null);
+        else{
+            thread.reportActionStatus(true,datagram.getIdentifier(),null,null);
+            String srcUid=thread.getCurrentUser().getId();
+            String dstUid=sessionEntity.getIdOfOther(srcUid);
+            UpdateEntity updateEntity=new UpdateEntity(UUIDUtils.getRandomUUID(),srcUid,dstUid,UpdateEntity.TYPE_SESSION_UPDATED,
+                    System.currentTimeMillis(),sessionId);
+            updateDao.addUpdate(updateEntity);
+            thread.remind(dstUid);
+        }
+    }
+
+    private void deleteSession(Datagram datagram, ClientThread thread){
+        SessionEntity sessionEntity=getSession(datagram,thread);
+        if(sessionEntity==null)
+            return;
+
+        String sessionId=sessionEntity.getSessionId();
 
         String uidDst=sessionEntity.getIdOfOther(thread.getCurrentUser().getId());
 
@@ -112,6 +142,9 @@ public class SessionProcessor implements DataProcessor {
             return;
         }else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_DELETE_SESSION)){
             deleteSession(datagram,thread);
+            return;
+        }else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_UPDATE_SESSION)){
+            updateSession(datagram,thread);
             return;
         }
     }

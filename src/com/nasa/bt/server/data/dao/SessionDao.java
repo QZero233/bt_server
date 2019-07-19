@@ -4,6 +4,7 @@ import com.nasa.bt.server.data.ConfigurationInstance;
 import com.nasa.bt.server.data.entity.SessionEntity;
 import com.nasa.bt.server.data.entity.UserInfoEntity;
 import org.apache.log4j.Logger;
+import org.hibernate.CacheMode;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
@@ -31,7 +32,9 @@ public class SessionDao {
     }
 
     public SessionEntity getSession(String sessionId){
+        session.clear();
         Query query=session.createQuery("from SessionEntity where sessionId=?1");
+        query.setCacheMode(CacheMode.IGNORE);
         query.setParameter(1,sessionId);
 
         SessionEntity sessionEntity= (SessionEntity) query.uniqueResult();
@@ -81,6 +84,16 @@ public class SessionDao {
         if(obj==null)
             return null;
         return (String) obj;
+    }
+
+    public boolean updateSession(SessionEntity sessionEntity){
+        if(!checkSessionPermission(sessionEntity))
+            return false;
+
+        session.beginTransaction();
+        session.update(sessionEntity);
+        session.getTransaction().commit();
+        return session.getTransaction().getStatus().equals(TransactionStatus.COMMITTED);
     }
 
     private boolean checkSessionPermission(SessionEntity sessionEntity){

@@ -26,7 +26,8 @@ public class DataProcessorFactory {
         else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_USER_INFO))
             return new UserProcessor();
         else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_CREATE_SESSION) || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_SESSION_DETAIL) ||
-        identifier.equalsIgnoreCase(Datagram.IDENTIFIER_SESSIONS_INDEX) || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_DELETE_SESSION))
+        identifier.equalsIgnoreCase(Datagram.IDENTIFIER_SESSIONS_INDEX) || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_DELETE_SESSION) ||
+        identifier.equalsIgnoreCase(Datagram.IDENTIFIER_UPDATE_SESSION))
             return new SessionProcessor();
         else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_REFRESH))
             return new RefreshProcessor();
