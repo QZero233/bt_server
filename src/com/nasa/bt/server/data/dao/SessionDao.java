@@ -115,4 +115,16 @@ public class SessionDao {
         query.setParameter(1,uid);
         return query.list();
     }
+
+    public List<SessionEntity> getAllSessionExcept(String sessionIds,String uid){
+        String hql="from SessionEntity where srcUid=?1 or dstUid=?1 ";
+        for(int i=0;i<sessionIds.length()/36;i++){
+            String subId=sessionIds.substring(i*36,(i+1)*36);
+            hql+="and sessionId!='"+subId+"'";
+        }
+        Query query=session.createQuery(hql);
+        query.setParameter(1,uid);
+
+        return query.list();
+    }
 }

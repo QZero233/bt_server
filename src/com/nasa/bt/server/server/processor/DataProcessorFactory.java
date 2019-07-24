@@ -34,6 +34,10 @@ public class DataProcessorFactory {
         else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_UPDATE_INDEX) || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_UPDATE_DETAIL)
                 || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_DELETE_UPDATE))
             return new UpdateProcessor();
+        else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_SYNC))
+            return new SyncProcessor();
+        else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_UPGRADE_DETAIL) || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_UPGRADE_VER_CODE))
+            return new UpgradeProcessor();
 
         return null;
     }

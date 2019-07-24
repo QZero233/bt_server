@@ -1,6 +1,8 @@
 package com.nasa.bt.server.data;
 
+import com.alibaba.fastjson.JSON;
 import com.nasa.bt.server.cls.ServerProperties;
+import com.nasa.bt.server.cls.UpgradeStatus;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -17,6 +19,7 @@ public class ServerDataUtils {
 
     public static final String MSG_ROOT_PATH="data/msg/";
     public static final String PROPERTIES_FILE_PATH="server.properties";
+    public static final String UPGRADE_FILE_PATH="upgrade.json";
 
     /**
      * 把消息写入本地文件
@@ -100,6 +103,20 @@ public class ServerDataUtils {
         }catch (Exception e){
             log.error("在解析服务器配置文件时错误",e);
             return defaultProperties;
+        }
+    }
+
+    public static UpgradeStatus readUpgradeStatus(){
+        File file=new File(UPGRADE_FILE_PATH);
+        try{
+            FileInputStream fis=new FileInputStream(file);
+            byte[] buf=new byte[(int) file.length()];
+            fis.read(buf);
+            fis.close();
+            return JSON.parseObject(buf,UpgradeStatus.class);
+        }catch (Exception e){
+            log.error("读取更新信息时异常",e);
+            return null;
         }
     }
 

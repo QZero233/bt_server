@@ -16,20 +16,16 @@ import java.util.List;
 public class RefreshProcessor implements DataProcessor {
 
     private TempMessageDao tempMessageDao;
-    private SessionDao sessionDao;
     private UpdateDao updateDao;
 
     @Override
     public void process(Datagram datagram, ClientThread thread) {
         tempMessageDao=thread.getTempMessageDao();
-        sessionDao=thread.getSessionDao();
         updateDao=thread.getUpdateDao();
 
         List<TempMessageEntity> unread=tempMessageDao.getAllUnreadMessage(thread.getCurrentUser().getId());
         sendUnreadMessage(thread,unread);
 
-        List<SessionEntity> sessionEntityList=sessionDao.getAllSession(thread.getCurrentUser().getId());
-        sendSessions(thread,sessionEntityList);
 
         List<UpdateEntity> updateEntityList=updateDao.getAllUpdate(thread.getCurrentUser().getId());
         sendUpdates(thread,updateEntityList);
@@ -54,14 +50,4 @@ public class RefreshProcessor implements DataProcessor {
             thread.writeDatagram(returnDatagram);
         }
     }
-
-    private void sendSessions(ClientThread thread, List<SessionEntity> sessions){
-        if(sessions==null || sessions.isEmpty())
-            return;
-        for(SessionEntity sessionEntity:sessions){
-            Datagram datagramReturn=new Datagram(Datagram.IDENTIFIER_SESSION_DETAIL,new ParamBuilder().putParam("session", JSON.toJSONString(sessionEntity)).build());
-            thread.writeDatagram(datagramReturn);
-        }
-    }
-
 }
