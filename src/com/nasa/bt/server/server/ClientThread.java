@@ -1,6 +1,8 @@
 package com.nasa.bt.server.server;
 
 import com.alibaba.fastjson.JSON;
+import com.nasa.bt.server.ca.CAObject;
+import com.nasa.bt.server.ca.CAUtils;
 import com.nasa.bt.server.cls.ActionReport;
 import com.nasa.bt.server.cls.Datagram;
 import com.nasa.bt.server.cls.ParamBuilder;
@@ -43,7 +45,6 @@ public class ClientThread extends Thread {
         this.parent = parent;
         try {
             helper=new SocketIOHelper(socket.getInputStream(),socket.getOutputStream());
-            helper.setPrivateKey(CryptModuleRSA.SERVER_PRI_KEY);
             log.info("新客户端连接成功");
         }catch (Exception e){
             log.error("启动客户端线程时错误",e);
@@ -51,20 +52,121 @@ public class ClientThread extends Thread {
 
     }
 
+    private ParamBuilder prepareHandShakeParam(String need){
+        ParamBuilder result=new ParamBuilder();
+        if(need.contains(SocketIOHelper.NEED_PUB_KEY)){
+            result.putParam(SocketIOHelper.NEED_PUB_KEY,CryptModuleRSA.SERVER_PUB_KEY);
+        }
+        if(need.contains(SocketIOHelper.NEED_CA)){
+            String caStr=CAUtils.readCAFile();
+            result.putParam(SocketIOHelper.NEED_CA,caStr);
+        }
+
+        return result;
+    }
+
+    private boolean checkHandShakeParam(Map<String,String> params,String myNeed){
+        /**
+         * 如果有问题就返回false，没问题就跳过
+         */
+        String dstPubKey=params.get(SocketIOHelper.NEED_PUB_KEY);
+        if(myNeed.contains(SocketIOHelper.NEED_PUB_KEY)){
+            if(dstPubKey==null)
+                return false;
+            helper.initRSACryptModule(dstPubKey,CryptModuleRSA.SERVER_PRI_KEY);
+        }
+        if(myNeed.contains(SocketIOHelper.NEED_CA)){
+            String ca=params.get(SocketIOHelper.NEED_CA);
+            if(ca==null)
+                return false;
+
+            CAObject caObject=CAUtils.stringToCAObject(ca);
+            if(!CAUtils.checkCA(caObject,dstPubKey))
+                return false;
+        }
+
+        return true;
+    }
+
+
+
+    private boolean doHandShake(){
+        String feedback=Datagram.HANDSHAKE_FEEDBACK_SUCCESS;
+        //开始握手
+        log.info("开始握手");
+        /**
+         * 1.发送需求
+         * 2.获取需求
+         * 3.发送对方需要的
+         * 4.接收自己需要的
+         * 5.反馈
+         */
+
+        //TODO 动态获取需求
+        //String myNeed=SocketIOHelper.NEED_PUB_KEY+",";
+        String myNeed=SocketIOHelper.NEED_PUB_KEY+","+SocketIOHelper.NEED_CA;
+        if(!helper.sendNeed(myNeed)){
+            log.error("发送需求失败");
+            return false;
+        }
+
+        String dstNeed;
+        if((dstNeed=helper.readNeed())==null){
+            log.error("读取对方需求失败");
+            return false;
+        }
+
+        ParamBuilder handShakeParam=prepareHandShakeParam(dstNeed);
+        if(!helper.sendHandShakeParam(handShakeParam)){
+            log.error("发送握手参数失败");
+            return false;
+        }
+
+        Map<String,String> params;
+        if((params=helper.readHandShakeParam())==null){
+            log.error("读取对方握手参数失败");
+            return false;
+        }
+
+        if(!checkHandShakeParam(params,myNeed)){
+            log.error("参数检查失败");
+            feedback=Datagram.HANDSHAKE_FEEDBACK_CA_WRONG;
+            helper.sendFeedback(feedback);
+            return false;
+        }
+
+        helper.sendFeedback(feedback);
+
+        return true;
+    }
+
+    private boolean readHandShakeFeedback(){
+        Datagram datagram=helper.readHandShakeFeedback();
+        String feedback=datagram.getParamsAsString().get("feedback");
+        if(feedback==null)
+            return false;
+
+        if(feedback.equalsIgnoreCase(Datagram.HANDSHAKE_FEEDBACK_SUCCESS)){
+            return true;
+        }else if(feedback.equalsIgnoreCase(Datagram.HANDSHAKE_FEEDBACK_CA_WRONG)){
+            return false;
+        }
+        return false;
+    }
+
+
+
     @Override
     public void run() {
         super.run();
 
-        new Thread(){
-            @Override
-            public void run() {
-                super.run();
-                //启动新线程来发送公钥信息
-                while(!helper.sendPublicKey(CryptModuleRSA.SERVER_PUB_KEY))
-                    log.info("发送公钥失败，继续尝试");
-            }
-        }.start();
+        if(!doHandShake())
+            return;
+        if(!readHandShakeFeedback())
+            return;
 
+        //握手完成
+        log.info("握手完成");
         //只要连接没断就一直读取数据包
         while(!socket.isClosed()){
             try {

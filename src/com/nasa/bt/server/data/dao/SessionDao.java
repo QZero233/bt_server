@@ -76,7 +76,7 @@ public class SessionDao {
     }
 
     public String getExistNormalSession(String uid,String uidDst){
-        Query query=session.createQuery("select sessionId from SessionEntity where dstUid=?1 and srcUid=?2 or dstUid=?2 and srcUid=?1 and sessionType=?3");
+        Query query=session.createQuery("select sessionId from SessionEntity where dstUid=?1 and srcUid=?2 and sessionType=?3  or dstUid=?2 and srcUid=?1 and sessionType=?3");
         query.setParameter(1,uid);
         query.setParameter(2,uidDst);
         query.setParameter(3,SessionEntity.TYPE_NORMAL);
