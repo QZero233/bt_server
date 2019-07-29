@@ -10,10 +10,12 @@ public class UserAuthInfoEntity {
     @Id
     private String name;
     private String codeHash;
+    private Boolean forceCA;
 
-    public UserAuthInfoEntity(String name, String codeHash) {
+    public UserAuthInfoEntity(String name, String codeHash, Boolean forceCA) {
         this.name = name;
         this.codeHash = codeHash;
+        this.forceCA = forceCA;
     }
 
     public UserAuthInfoEntity() {
@@ -39,18 +41,29 @@ public class UserAuthInfoEntity {
         this.codeHash = codeHash;
     }
 
+    @Basic
+    @Column(name = "forceCA")
+    public Boolean getForceCA() {
+        return forceCA;
+    }
+
+    public void setForceCA(Boolean forceCA) {
+        this.forceCA = forceCA;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         UserAuthInfoEntity that = (UserAuthInfoEntity) o;
         return Objects.equals(name, that.name) &&
-                Objects.equals(codeHash, that.codeHash);
+                Objects.equals(codeHash, that.codeHash) &&
+                Objects.equals(forceCA, that.forceCA);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, codeHash);
+        return Objects.hash(name, codeHash, forceCA);
     }
 
     @Override
@@ -58,6 +71,7 @@ public class UserAuthInfoEntity {
         return "UserAuthInfoEntity{" +
                 "name='" + name + '\'' +
                 ", codeHash='" + codeHash + '\'' +
+                ", forceCA=" + forceCA +
                 '}';
     }
 }

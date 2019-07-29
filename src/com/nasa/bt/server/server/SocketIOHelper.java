@@ -327,4 +327,13 @@ public class SocketIOHelper {
         return writeOs(datagram,false);
     }
 
+    public boolean sendNeedParam(ParamBuilder needParam){
+        Datagram datagram=new Datagram(Datagram.IDENTIFIER_NONE,needParam.build());
+        return writeOs(datagram,false);
+    }
+
+    public Map<String,String> readNeedParam(){
+        return readIs(false).getParamsAsString();
+    }
+
 }

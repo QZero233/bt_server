@@ -41,7 +41,7 @@ public class HibernateTest {
     @Test
     public void testWrite(){
         UserInfoEntity user=new UserInfoEntity(UUIDUtils.getRandomUUID(),"test-hibernate");
-        UserAuthInfoEntity authInfo=new UserAuthInfoEntity("test-hibernate", SHA256Utils.getSHA256InHex("code"));
+        UserAuthInfoEntity authInfo=new UserAuthInfoEntity("test-hibernate", SHA256Utils.getSHA256InHex("code"),false);
 
         Transaction transaction=session.beginTransaction();
         session.save(user);

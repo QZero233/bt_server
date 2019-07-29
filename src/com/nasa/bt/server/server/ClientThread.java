@@ -34,6 +34,7 @@ public class ClientThread extends Thread {
     private ServerManager parent;
 
     private UserInfoEntity currentUser=null;
+    private String name;
 
     private SessionDao sessionDao=new SessionDao();
     private TempMessageDao tempMessageDao=new TempMessageDao();
@@ -88,13 +89,19 @@ public class ClientThread extends Thread {
         return true;
     }
 
-
+    private String getNeed(String name){
+        String need=SocketIOHelper.NEED_PUB_KEY+",";
+        if(userInfoDao.checkIfForceCA(name))
+            need+=SocketIOHelper.NEED_CA;
+        return need;
+    }
 
     private boolean doHandShake(){
         String feedback=Datagram.HANDSHAKE_FEEDBACK_SUCCESS;
         //开始握手
         log.info("开始握手");
         /**
+         * 0.发送需求参数
          * 1.发送需求
          * 2.获取需求
          * 3.发送对方需要的
@@ -102,9 +109,20 @@ public class ClientThread extends Thread {
          * 5.反馈
          */
 
-        //TODO 动态获取需求
-        //String myNeed=SocketIOHelper.NEED_PUB_KEY+",";
-        String myNeed=SocketIOHelper.NEED_PUB_KEY+","+SocketIOHelper.NEED_CA;
+        if(!helper.sendNeedParam(new ParamBuilder())){
+            log.error("发送需求参数失败");
+            return false;
+        }
+
+        Map<String,String> needParam=helper.readNeedParam();
+        if(needParam==null){
+            log.error("读取客户端需求参数失败");
+            return false;
+        }
+
+        name=needParam.get("name");
+        String myNeed=getNeed(name);
+
         if(!helper.sendNeed(myNeed)){
             log.error("发送需求失败");
             return false;
@@ -217,6 +235,10 @@ public class ClientThread extends Thread {
     }
 
     public void setCurrentUser(UserInfoEntity currentUser) {
+        if(!currentUser.getName().equals(name)){
+            throw new IllegalArgumentException("错误，登录用户与需求参数中的用户名不一致");
+        }
+
         this.currentUser = currentUser;
         parent.addClient(this,currentUser.getId());
 

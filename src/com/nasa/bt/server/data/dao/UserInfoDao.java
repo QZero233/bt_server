@@ -17,6 +17,13 @@ public class UserInfoDao {
         session= ConfigurationInstance.openSession();
     }
 
+    public boolean checkIfForceCA(String name){
+        Query query=session.createQuery("select forceCA from UserAuthInfoEntity where name=?1");
+        query.setParameter(1,name);
+        Boolean result= (Boolean) query.uniqueResult();
+        return result.booleanValue();
+    }
+
     public UserInfoEntity getUserInfoByUid(String uid){
         Query query=session.createQuery("from UserInfoEntity where id=?1");
         query.setParameter(1,uid);
@@ -54,7 +61,7 @@ public class UserInfoDao {
             return false;
 
         session.beginTransaction();
-        UserAuthInfoEntity authInfoEntity=new UserAuthInfoEntity(userInfoEntity.getName(),codeHash);
+        UserAuthInfoEntity authInfoEntity=new UserAuthInfoEntity(userInfoEntity.getName(),codeHash,false);
         session.save(userInfoEntity);
         session.save(authInfoEntity);
         session.getTransaction().commit();
@@ -67,7 +74,7 @@ public class UserInfoDao {
         UserInfoEntity userInfoEntity=getUserInfoByUid(uid);
         if(userInfoEntity==null)
             return false;
-        UserAuthInfoEntity authInfoEntity=new UserAuthInfoEntity(userInfoEntity.getName(),null);
+        UserAuthInfoEntity authInfoEntity=new UserAuthInfoEntity(userInfoEntity.getName(),null,false);
 
         session.beginTransaction();
         session.delete(userInfoEntity);
