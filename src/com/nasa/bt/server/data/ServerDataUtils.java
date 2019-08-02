@@ -1,8 +1,10 @@
 package com.nasa.bt.server.data;
 
 import com.alibaba.fastjson.JSON;
+import com.nasa.bt.server.cls.RSAKeySet;
 import com.nasa.bt.server.cls.ServerProperties;
 import com.nasa.bt.server.cls.UpgradeStatus;
+import com.nasa.bt.server.utils.FileIOUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -20,6 +22,8 @@ public class ServerDataUtils {
     public static final String MSG_ROOT_PATH="data/msg/";
     public static final String PROPERTIES_FILE_PATH="server.properties";
     public static final String UPGRADE_FILE_PATH="upgrade.json";
+
+    public static final String KEY_SET_NAME="keySet.data";
 
     /**
      * 把消息写入本地文件
@@ -118,6 +122,19 @@ public class ServerDataUtils {
             log.error("读取更新信息时异常",e);
             return null;
         }
+    }
+
+    public static RSAKeySet readRSAKeySet(){
+        File file=new File(KEY_SET_NAME);
+        byte[] buf= FileIOUtils.readFile(file);
+        if(buf==null)
+            return null;
+        return JSON.parseObject(buf,RSAKeySet.class);
+    }
+
+    public static boolean saveRSAKeySet(RSAKeySet rsaKeySet){
+        File file=new File(KEY_SET_NAME);
+        return FileIOUtils.writeFile(file,JSON.toJSONString(rsaKeySet).getBytes());
     }
 
 }
