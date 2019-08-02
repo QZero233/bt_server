@@ -21,6 +21,8 @@ public class UserInfoDao {
         Query query=session.createQuery("select forceCA from UserAuthInfoEntity where name=?1");
         query.setParameter(1,name);
         Boolean result= (Boolean) query.uniqueResult();
+        if(result==null)
+            return false;
         return result.booleanValue();
     }
 

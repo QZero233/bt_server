@@ -53,134 +53,12 @@ public class ClientThread extends Thread {
 
     }
 
-    private ParamBuilder prepareHandShakeParam(String need){
-        ParamBuilder result=new ParamBuilder();
-        if(need.contains(SocketIOHelper.NEED_PUB_KEY)){
-            result.putParam(SocketIOHelper.NEED_PUB_KEY,CryptModuleRSA.SERVER_PUB_KEY);
-        }
-        if(need.contains(SocketIOHelper.NEED_CA)){
-            String caStr=CAUtils.readCAFile();
-            result.putParam(SocketIOHelper.NEED_CA,caStr);
-        }
-
-        return result;
-    }
-
-    private boolean checkHandShakeParam(Map<String,String> params,String myNeed){
-        /**
-         * 如果有问题就返回false，没问题就跳过
-         */
-        String dstPubKey=params.get(SocketIOHelper.NEED_PUB_KEY);
-        if(myNeed.contains(SocketIOHelper.NEED_PUB_KEY)){
-            if(dstPubKey==null)
-                return false;
-            helper.initRSACryptModule(dstPubKey,CryptModuleRSA.SERVER_PRI_KEY);
-        }
-        if(myNeed.contains(SocketIOHelper.NEED_CA)){
-            String ca=params.get(SocketIOHelper.NEED_CA);
-            if(ca==null)
-                return false;
-
-            CAObject caObject=CAUtils.stringToCAObject(ca);
-            if(!CAUtils.checkCA(caObject,dstPubKey))
-                return false;
-        }
-
-        return true;
-    }
-
-    private String getNeed(String name){
-        String need=SocketIOHelper.NEED_PUB_KEY+",";
-        if(userInfoDao.checkIfForceCA(name))
-            need+=SocketIOHelper.NEED_CA;
-        return need;
-    }
-
-    private boolean doHandShake(){
-        String feedback=Datagram.HANDSHAKE_FEEDBACK_SUCCESS;
-        //开始握手
-        log.info("开始握手");
-        /**
-         * 0.发送需求参数
-         * 1.发送需求
-         * 2.获取需求
-         * 3.发送对方需要的
-         * 4.接收自己需要的
-         * 5.反馈
-         */
-
-        if(!helper.sendNeedParam(new ParamBuilder())){
-            log.error("发送需求参数失败");
-            return false;
-        }
-
-        Map<String,String> needParam=helper.readNeedParam();
-        if(needParam==null){
-            log.error("读取客户端需求参数失败");
-            return false;
-        }
-
-        name=needParam.get("name");
-        String myNeed=getNeed(name);
-
-        if(!helper.sendNeed(myNeed)){
-            log.error("发送需求失败");
-            return false;
-        }
-
-        String dstNeed;
-        if((dstNeed=helper.readNeed())==null){
-            log.error("读取对方需求失败");
-            return false;
-        }
-
-        ParamBuilder handShakeParam=prepareHandShakeParam(dstNeed);
-        if(!helper.sendHandShakeParam(handShakeParam)){
-            log.error("发送握手参数失败");
-            return false;
-        }
-
-        Map<String,String> params;
-        if((params=helper.readHandShakeParam())==null){
-            log.error("读取对方握手参数失败");
-            return false;
-        }
-
-        if(!checkHandShakeParam(params,myNeed)){
-            log.error("参数检查失败");
-            feedback=Datagram.HANDSHAKE_FEEDBACK_CA_WRONG;
-            helper.sendFeedback(feedback);
-            return false;
-        }
-
-        helper.sendFeedback(feedback);
-
-        return true;
-    }
-
-    private boolean readHandShakeFeedback(){
-        Datagram datagram=helper.readHandShakeFeedback();
-        String feedback=datagram.getParamsAsString().get("feedback");
-        if(feedback==null)
-            return false;
-
-        if(feedback.equalsIgnoreCase(Datagram.HANDSHAKE_FEEDBACK_SUCCESS)){
-            return true;
-        }else if(feedback.equalsIgnoreCase(Datagram.HANDSHAKE_FEEDBACK_CA_WRONG)){
-            return false;
-        }
-        return false;
-    }
-
-
-
     @Override
     public void run() {
         super.run();
 
-        if(!doHandShake())
-            return;
-        if(!readHandShakeFeedback())
+        ServerHandShakeHelper serverHandShakeHelper=new ServerHandShakeHelper(helper,this);
+        if(!serverHandShakeHelper.doHandShake())
             return;
 
         //握手完成
@@ -232,6 +110,10 @@ public class ClientThread extends Thread {
 
     public UserInfoEntity getCurrentUser(){
         return currentUser;
+    }
+
+    public void setHandShakeName(String name){
+        this.name=name;
     }
 
     public void setCurrentUser(UserInfoEntity currentUser) {

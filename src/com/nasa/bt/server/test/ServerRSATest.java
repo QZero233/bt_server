@@ -53,57 +53,5 @@ public class ServerRSATest {
     }
 
 
-    @Test
-    public void testSererRSA() throws Exception{
-        Socket socket=new Socket("127.0.0.1",8848);
-        SocketIOHelper helper=new SocketIOHelper(socket.getInputStream(),socket.getOutputStream());
-
-
-
-        //String myNeed=SocketIOHelper.NEED_PUB_KEY+",";
-        String myNeed=SocketIOHelper.NEED_PUB_KEY+","+SocketIOHelper.NEED_CA;
-        helper.sendNeed(myNeed);
-
-
-        String dstNeed;
-        if((dstNeed=helper.readNeed())==null){
-            log.error("读取对方需求失败");
-            return;
-        }else{
-            log.info("对方需求 "+dstNeed);
-        }
-
-        ParamBuilder handShakeParam=prepareHandShakeParam(dstNeed);
-        helper.sendHandShakeParam(handShakeParam);
-
-
-        Map<String,String> params;
-        if((params=helper.readHandShakeParam())==null){
-            log.error("读取对方握手参数失败");
-            return;
-        }else{
-           log.info("对方握手参数 "+params);
-        }
-
-        if(!checkHandShakeParam(params,myNeed,helper)){
-            log.error("参数检查失败");
-            return;
-        }
-
-        new Thread(){
-            @Override
-            public void run() {
-                super.run();
-                while(true){
-                    System.out.println(helper.readIs());
-                }
-            }
-        }.start();
-
-        Datagram datagramTest=new Datagram("AAAA",null);
-        helper.writeOs(datagramTest);
-
-        Thread.sleep(500000);
-    }
 
 }
