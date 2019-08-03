@@ -23,7 +23,7 @@ public class ServerRSATest {
             result.putParam(SocketIOHelper.NEED_PUB_KEY, TEST_PUB);
         }
         if(need.contains(SocketIOHelper.NEED_CA)){
-            //TODO 放入CA证书
+
 
         }
 
@@ -44,7 +44,7 @@ public class ServerRSATest {
             String ca=params.get(SocketIOHelper.NEED_CA);
             if(ca==null)
                 return false;
-            //TODO 检查CA证书
+
             if(!ca.equalsIgnoreCase("this is ca"))
                 return false;
         }

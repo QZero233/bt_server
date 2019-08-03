@@ -17,8 +17,8 @@
         <mapping class="com.nasa.bt.server.data.entity.TempMessageEntity"/>
         <mapping class="com.nasa.bt.server.data.entity.UserAuthInfoEntity"/>
         <mapping class="com.nasa.bt.server.data.entity.UserInfoEntity"/>
-        <mapping class="com.nasa.bt.server.data.entity.UpdateEntity" />
         <mapping class="com.nasa.bt.server.data.entity.TrustedRemotePublicKeyEntity" />
+        <mapping class="com.nasa.bt.server.data.entity.UpdateRecordEntity" />
 
 
         <!-- DB schema will be updated if needed -->

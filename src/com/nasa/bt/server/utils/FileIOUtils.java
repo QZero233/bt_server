@@ -20,7 +20,7 @@ public class FileIOUtils {
             fos.close();
             return true;
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
             return false;
         }
     }
@@ -38,7 +38,7 @@ public class FileIOUtils {
             fis.close();
             return buf;
         }catch (Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
             return null;
         }
     }

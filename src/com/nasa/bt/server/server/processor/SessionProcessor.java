@@ -4,19 +4,18 @@ import com.alibaba.fastjson.JSON;
 import com.nasa.bt.server.cls.Datagram;
 import com.nasa.bt.server.cls.ParamBuilder;
 import com.nasa.bt.server.data.dao.SessionDao;
-import com.nasa.bt.server.data.dao.UpdateDao;
+import com.nasa.bt.server.data.dao.UpdateRecordDao;
 import com.nasa.bt.server.data.entity.SessionEntity;
-import com.nasa.bt.server.data.entity.UpdateEntity;
+import com.nasa.bt.server.data.entity.UpdateRecordEntity;
 import com.nasa.bt.server.server.ClientThread;
 import com.nasa.bt.server.utils.UUIDUtils;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class SessionProcessor implements DataProcessor {
 
     private SessionDao sessionDao;
-    private UpdateDao updateDao;
+    private UpdateRecordDao updateRecordDao;
 
     private void createSession(Datagram datagram,ClientThread thread){
         Map<String,String> params=datagram.getParamsAsString();
@@ -42,9 +41,6 @@ public class SessionProcessor implements DataProcessor {
             thread.reportActionStatus(false,datagram.getIdentifier(),null,null);
         }
 
-        UpdateEntity updateEntity=new UpdateEntity(UUIDUtils.getRandomUUID(),thread.getCurrentUser().getId(),uidDst,UpdateEntity.TYPE_SESSION_CREATE,System.currentTimeMillis()
-        ,sessionId);
-        updateDao.addUpdate(updateEntity);
         thread.remind(uidDst);
     }
 
@@ -97,9 +93,9 @@ public class SessionProcessor implements DataProcessor {
             thread.reportActionStatus(true,datagram.getIdentifier(),null,null);
             String srcUid=thread.getCurrentUser().getId();
             String dstUid=sessionEntity.getIdOfOther(srcUid);
-            UpdateEntity updateEntity=new UpdateEntity(UUIDUtils.getRandomUUID(),srcUid,dstUid,UpdateEntity.TYPE_SESSION_UPDATED,
-                    System.currentTimeMillis(),sessionId);
-            updateDao.addUpdate(updateEntity);
+
+            UpdateRecordEntity updateRecordEntity=new UpdateRecordEntity(sessionId,UpdateRecordEntity.TYPE_SESSION,UpdateRecordEntity.STATUS_ALIVE,System.currentTimeMillis());
+            updateRecordDao.addOrUpdateUpdateRecord(updateRecordEntity);
             thread.remind(dstUid);
         }
     }
@@ -119,16 +115,15 @@ public class SessionProcessor implements DataProcessor {
             thread.reportActionStatus(false,datagram.getIdentifier(),null,null);
         }
 
-        UpdateEntity updateEntity=new UpdateEntity(UUIDUtils.getRandomUUID(),thread.getCurrentUser().getId(),uidDst,UpdateEntity.TYPE_SESSION_DELETE,System.currentTimeMillis()
-                ,sessionId);
-        updateDao.addUpdate(updateEntity);
+        UpdateRecordEntity updateRecordEntity=new UpdateRecordEntity(sessionId,UpdateRecordEntity.TYPE_SESSION,UpdateRecordEntity.STATUS_DELETED,System.currentTimeMillis());
+        updateRecordDao.addOrUpdateUpdateRecord(updateRecordEntity);
         thread.remind(uidDst);
     }
 
     @Override
     public void process(Datagram datagram, ClientThread thread) {
         sessionDao=thread.getSessionDao();
-        updateDao=thread.getUpdateDao();
+        updateRecordDao=new UpdateRecordDao();
 
         String identifier=datagram.getIdentifier();
         if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_CREATE_SESSION)){

@@ -1,6 +1,7 @@
 package com.nasa.bt.server.data.dao;
 
 import com.nasa.bt.server.data.ConfigurationInstance;
+import com.nasa.bt.server.data.PermissionChecker;
 import com.nasa.bt.server.data.ServerDataUtils;
 import com.nasa.bt.server.data.entity.TempMessageEntity;
 import com.nasa.bt.server.data.entity.UserInfoEntity;
@@ -16,7 +17,7 @@ public class TempMessageDao {
 
     private static final Logger log=Logger.getLogger(TempMessageDao.class);
     private Session session;
-    private UserInfoEntity currentUser;
+    private PermissionChecker permissionChecker;
 
     public TempMessageDao() {
         session= ConfigurationInstance.openSession();
@@ -61,7 +62,7 @@ public class TempMessageDao {
 
         TempMessageEntity result= (TempMessageEntity) obj;
 
-        if(!checkMessagePermission(result))
+        if(!permissionChecker.checkMessageReadAndWrite(result))
             return null;
 
         String content=ServerDataUtils.readLocalMsgContent(result.getMsgId());
@@ -74,7 +75,7 @@ public class TempMessageDao {
 
     public boolean deleteMessage(String msgId){
         TempMessageEntity deleteEntity=session.load(TempMessageEntity.class,msgId);
-        if(!checkMessagePermission(deleteEntity))
+        if(!permissionChecker.checkMessageReadAndWrite(deleteEntity))
             return false;
 
         session.beginTransaction();
@@ -94,16 +95,7 @@ public class TempMessageDao {
         return result;
     }
 
-    private boolean checkMessagePermission(TempMessageEntity messageEntity){
-        if(messageEntity==null || currentUser==null)
-            return false;
-
-        if(messageEntity.getDstUid().equals(currentUser.getId()))
-            return true;
-        return false;
-    }
-
-    public void setCurrentUser(UserInfoEntity currentUser) {
-        this.currentUser = currentUser;
+    public void setPermissionChecker(PermissionChecker permissionChecker) {
+        this.permissionChecker = permissionChecker;
     }
 }

@@ -31,13 +31,12 @@ public class DataProcessorFactory {
             return new SessionProcessor();
         else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_REFRESH))
             return new RefreshProcessor();
-        else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_UPDATE_INDEX) || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_UPDATE_DETAIL)
-                || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_DELETE_UPDATE))
-            return new UpdateProcessor();
         else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_SYNC))
             return new SyncProcessor();
         else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_UPGRADE_DETAIL) || identifier.equalsIgnoreCase(Datagram.IDENTIFIER_UPGRADE_VER_CODE))
             return new UpgradeProcessor();
+        else if(identifier.equalsIgnoreCase(Datagram.IDENTIFIER_UPDATE_RECORD))
+            return new UpdateRecordProcessor();
 
         return null;
     }

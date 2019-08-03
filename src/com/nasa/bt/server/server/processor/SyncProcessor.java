@@ -6,7 +6,9 @@ import com.nasa.bt.server.cls.ParamBuilder;
 import com.nasa.bt.server.cls.UpgradeStatus;
 import com.nasa.bt.server.data.ServerDataUtils;
 import com.nasa.bt.server.data.dao.SessionDao;
+import com.nasa.bt.server.data.dao.UpdateRecordDao;
 import com.nasa.bt.server.data.entity.SessionEntity;
+import com.nasa.bt.server.data.entity.UpdateRecordEntity;
 import com.nasa.bt.server.data.entity.UserInfoEntity;
 import com.nasa.bt.server.server.ClientThread;
 
@@ -14,19 +16,31 @@ import java.util.List;
 
 public class SyncProcessor implements DataProcessor {
 
-    private SessionDao sessionDao;
 
     @Override
     public void process(Datagram datagram, ClientThread thread) {
-        sessionDao=thread.getSessionDao();
+        SessionDao sessionDao=thread.getSessionDao();
+        UpdateRecordDao updateRecordDao=new UpdateRecordDao();
+
         String sessionIds=datagram.getParamsAsString().get("session_id");
+        String lastSyncTime=datagram.getParamsAsString().get("last_sync_time");
         List<SessionEntity> result=sessionDao.getAllSessionExcept(sessionIds,thread.getCurrentUser().getId());
+        List<UpdateRecordEntity> updateRecordEntities=null;
+
+        try {
+            updateRecordEntities=updateRecordDao.getUpdateRecords(sessionIds,Long.parseLong(lastSyncTime));
+        }catch (Exception e){
+
+        }
+
 
         sendVerCode(thread);
         sendUserInfoOfMine(thread);
         sendSessions(thread,result);
+        sendUpdateRecords(thread,updateRecordEntities);
 
-        thread.reportActionStatus(true,datagram.getIdentifier(),null,null);
+
+        thread.reportActionStatus(true,datagram.getIdentifier(),System.currentTimeMillis()+"",null);
     }
 
     private void sendUserInfoOfMine(ClientThread thread){
@@ -54,6 +68,16 @@ public class SyncProcessor implements DataProcessor {
         for(SessionEntity sessionEntity:sessions){
             Datagram datagramReturn=new Datagram(Datagram.IDENTIFIER_SESSION_DETAIL,new ParamBuilder().putParam("session", JSON.toJSONString(sessionEntity)).build());
             thread.writeDatagram(datagramReturn);
+        }
+    }
+
+    private void sendUpdateRecords(ClientThread thread, List<UpdateRecordEntity> updateRecordEntities){
+        if(updateRecordEntities==null || updateRecordEntities.isEmpty())
+            return;
+
+        for(UpdateRecordEntity updateRecordEntity:updateRecordEntities){
+            Datagram datagram=new Datagram(Datagram.IDENTIFIER_UPDATE_RECORD,new ParamBuilder().putParam("update_record",JSON.toJSONString(updateRecordEntity)).build());
+            thread.writeDatagram(datagram);
         }
     }
 }

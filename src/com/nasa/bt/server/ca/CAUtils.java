@@ -23,15 +23,13 @@ public class CAUtils {
      */
     private static Map<String,String> trustedKeyList=new HashMap<>();
     static {
-        addTrustedPubKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuV+h2abIjwhmnpllk/6sFnhXUJSPqOonZueRauZ+Tqbeclli5idCPPFJTWJQCHfXfA2fRRDdHi53ey9R/2vrZDxeZmihkMAxTWfaYHUnWJq533GEsCGmVaz4Tio5s4SMmOFFUy9FEZsdL3sYvUpcRILWsbot0F0u/pIb/lEMFH+McSUJMh4fqaOllVa4z0zdMuqpnrEOSMyf+LUJk5CHHQ/ZmcyBaDC2KfaPJRcMngLKIC3I6b475v+9rukGT7590hm1IzmOnqJJh1Px53efKVxcyZprSU7Dp/0qO/iLCfGeVu1uRLETBEcrICCcczN/QBLFKa/Djj3RcPcR1rbeFwIDAQAB");
-        addTrustedPubKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA058iwYIciqocqUOTPWWsH196gyYb2tKopf64KxI0dfy2fwIosI4CGWFjeHOMuzg4GMjDr+OgqH8f923293JmNx1mIFgKI67jQD0C2g3sjOtFxsa1JAmzsjt4O0w/I7pnj9xGzCB9qvebd4pCP2thjVQHMrTqBXVd5XrbzLVkICWMFzqPwIzraAkifM90O7bnadsSydrrO94Uqv2l/u7zT1+N0Q2JBQR4RsHzitOaQzAWCtAqLpyGkP1KLmWyDyGTTQgRy2GNl3QIVS11sTejNffw8J7J2YtcMSsD3xPMm9Gmf6UVNZKLyC16r/8ezC8hFy69EoAxSOxKDT9IC8MdSwIDAQAB");
-        addTrustedPubKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAx//aGTdBlbjcSKWuwR+zFf64jsexl+Vf8oXJmAwL65bsQv91ow6uHCYJyva9sVjQ3BRjw4F3RDIDEIZWr+b1ZlUrODgw4xNVgU/lC00RQO9mP7ny3BJgMTwe9aeA5yVlUHuDmWYbBcegHh5arHD/0XjwBEaR4Wg0CKigzEp9v3wPGR6R8Z9fRBCRimLvOBhbQOCTVIPDZvUq85dIex3DmyfOTusPBPWSV81AOTcvHP9vu/aCd/j/MvUDACtr/lXnKx9ou4Y7MBOKA1bRMTSmkTsyuQYWSv4OE/SlE5Oluuf2ogcNpWuE7ZUkeFfd1beARWtNd0W63EILYZGR5kubqwIDAQAB");
-        addTrustedPubKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAn7K5htRFWMhuL1xdB7FARbikymhniPWprdqTSh29876kcoNEdMlxOhvHLpISkkUWdn6wsCal+qGGULZ97zWm0HVdM7SFVT3i67VA0LHX9it/R6CDK/tRa+oA41DY9aNyEfi0tIvdCpRqZiD85JyrI5LREGCU+Qsgdvat2KSOY5ZryLhP72EozsCTaGx7d+oUeJLI5TXw+cvCI7bO1VolIeCOTzFN0ntQqGgyy0WI8/XFjqOLqWfQgx6UdXj2YLpPGvJNBTBfqrZDjptuCP9w/FvbolNYWL4OjXK0Y0Zp5/4mijcPbUlxK+O5gZKkqaWEBwa5CUe9av7EjJK3mZL4uwIDAQAB");
+        loadTrustedCAPublicKey();
     }
 
     private static final int CURRENT_CA_VERSION=1;
 
     private static final String CA_FILE_NAME="caFile.ca";
+    private static final String TRUSTED_PUBLIC_KEY_FILE_NAME="trustedPublicKey.data";
 
     public static void addTrustedPubKey(String key){
         trustedKeyList.put(SHA256Utils.getSHA256InHex(key),key);
@@ -144,16 +142,44 @@ public class CAUtils {
         }
     }
 
-    public static boolean writeCAFile(String caStr){
-        return FileIOUtils.writeFile(new File(CA_FILE_NAME),caStr.getBytes());
-    }
-
     public static String readCAFile(){
         byte[] buf=FileIOUtils.readFile(new File(CA_FILE_NAME));
         if(buf==null)
             return null;
 
         return new String(buf);
+    }
+
+    public static void saveTrustedPublicKey(){
+        File file=new File(TRUSTED_PUBLIC_KEY_FILE_NAME);
+        if(trustedKeyList==null)
+            return;
+
+        StringBuffer sb=new StringBuffer();
+        for(String value:trustedKeyList.values()){
+            sb.append(value);
+            sb.append("\n");
+        }
+
+        FileIOUtils.writeFile(file,sb.toString().getBytes());
+    }
+
+    public static void loadTrustedCAPublicKey(){
+        File file=new File(TRUSTED_PUBLIC_KEY_FILE_NAME);
+        byte[] buf=FileIOUtils.readFile(file);
+        if(buf==null){
+            addTrustedPubKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuV+h2abIjwhmnpllk/6sFnhXUJSPqOonZueRauZ+Tqbeclli5idCPPFJTWJQCHfXfA2fRRDdHi53ey9R/2vrZDxeZmihkMAxTWfaYHUnWJq533GEsCGmVaz4Tio5s4SMmOFFUy9FEZsdL3sYvUpcRILWsbot0F0u/pIb/lEMFH+McSUJMh4fqaOllVa4z0zdMuqpnrEOSMyf+LUJk5CHHQ/ZmcyBaDC2KfaPJRcMngLKIC3I6b475v+9rukGT7590hm1IzmOnqJJh1Px53efKVxcyZprSU7Dp/0qO/iLCfGeVu1uRLETBEcrICCcczN/QBLFKa/Djj3RcPcR1rbeFwIDAQAB");
+            addTrustedPubKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA058iwYIciqocqUOTPWWsH196gyYb2tKopf64KxI0dfy2fwIosI4CGWFjeHOMuzg4GMjDr+OgqH8f923293JmNx1mIFgKI67jQD0C2g3sjOtFxsa1JAmzsjt4O0w/I7pnj9xGzCB9qvebd4pCP2thjVQHMrTqBXVd5XrbzLVkICWMFzqPwIzraAkifM90O7bnadsSydrrO94Uqv2l/u7zT1+N0Q2JBQR4RsHzitOaQzAWCtAqLpyGkP1KLmWyDyGTTQgRy2GNl3QIVS11sTejNffw8J7J2YtcMSsD3xPMm9Gmf6UVNZKLyC16r/8ezC8hFy69EoAxSOxKDT9IC8MdSwIDAQAB");
+            addTrustedPubKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAx//aGTdBlbjcSKWuwR+zFf64jsexl+Vf8oXJmAwL65bsQv91ow6uHCYJyva9sVjQ3BRjw4F3RDIDEIZWr+b1ZlUrODgw4xNVgU/lC00RQO9mP7ny3BJgMTwe9aeA5yVlUHuDmWYbBcegHh5arHD/0XjwBEaR4Wg0CKigzEp9v3wPGR6R8Z9fRBCRimLvOBhbQOCTVIPDZvUq85dIex3DmyfOTusPBPWSV81AOTcvHP9vu/aCd/j/MvUDACtr/lXnKx9ou4Y7MBOKA1bRMTSmkTsyuQYWSv4OE/SlE5Oluuf2ogcNpWuE7ZUkeFfd1beARWtNd0W63EILYZGR5kubqwIDAQAB");
+            addTrustedPubKey("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAn7K5htRFWMhuL1xdB7FARbikymhniPWprdqTSh29876kcoNEdMlxOhvHLpISkkUWdn6wsCal+qGGULZ97zWm0HVdM7SFVT3i67VA0LHX9it/R6CDK/tRa+oA41DY9aNyEfi0tIvdCpRqZiD85JyrI5LREGCU+Qsgdvat2KSOY5ZryLhP72EozsCTaGx7d+oUeJLI5TXw+cvCI7bO1VolIeCOTzFN0ntQqGgyy0WI8/XFjqOLqWfQgx6UdXj2YLpPGvJNBTBfqrZDjptuCP9w/FvbolNYWL4OjXK0Y0Zp5/4mijcPbUlxK+O5gZKkqaWEBwa5CUe9av7EjJK3mZL4uwIDAQAB");
+            saveTrustedPublicKey();
+        }
+
+        String str=new String(buf);
+        String[] keys=str.split("\n");
+        for(String key:keys){
+            addTrustedPubKey(key);
+        }
     }
 
 }

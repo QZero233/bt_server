@@ -1,13 +1,10 @@
 package com.nasa.bt.server.server;
 
-import com.nasa.bt.server.ServerMain;
 import com.nasa.bt.server.cls.Datagram;
 import com.nasa.bt.server.cls.ParamBuilder;
 import com.nasa.bt.server.cls.ServerProperties;
 import com.nasa.bt.server.data.ServerDataUtils;
 import com.nasa.bt.server.data.dao.TempMessageDao;
-import com.nasa.bt.server.data.dao.UpdateDao;
-import com.nasa.bt.server.server.processor.DataProcessorFactory;
 import org.apache.log4j.Logger;
 
 import java.net.ServerSocket;
@@ -107,14 +104,12 @@ public class ServerManager {
                 public void run() {
                     super.run();
 
-                    String messageIndex= new TempMessageDao().getUnreadMessageIndexes(uid);
-                    Datagram messageDatagram=new Datagram(Datagram.IDENTIFIER_MESSAGE_INDEX,new ParamBuilder().putParam("index",messageIndex).build());
+                    Datagram datagramRefresh=new Datagram(Datagram.IDENTIFIER_REFRESH,null);
+                    Datagram datagramSync=new Datagram(Datagram.IDENTIFIER_SYNC,null);
 
-                    String updateIndex=new UpdateDao().getUpdateIndexes(uid);
-                    Datagram updateDatagram=new Datagram(Datagram.IDENTIFIER_UPDATE_INDEX,new ParamBuilder().putParam("update_id",updateIndex).build());
-
-                    clients.get(uid).writeDatagram(messageDatagram);
-                    clients.get(uid).writeDatagram(updateDatagram);
+                    clients.get(uid).writeDatagram(datagramRefresh);
+                    clients.get(uid).writeDatagram(datagramSync);
+                    //TODO 其实不用这么麻烦的，直接提醒客户端发送 同步 数据包就行了 XD
                 }
             }.start();
         }

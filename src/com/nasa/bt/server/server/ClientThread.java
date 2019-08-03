@@ -1,16 +1,13 @@
 package com.nasa.bt.server.server;
 
 import com.alibaba.fastjson.JSON;
-import com.nasa.bt.server.ca.CAObject;
-import com.nasa.bt.server.ca.CAUtils;
 import com.nasa.bt.server.cls.ActionReport;
 import com.nasa.bt.server.cls.Datagram;
 import com.nasa.bt.server.cls.ParamBuilder;
-import com.nasa.bt.server.crypt.CryptModuleRSA;
-import com.nasa.bt.server.data.ServerDataUtils;
+import com.nasa.bt.server.data.PermissionChecker;
 import com.nasa.bt.server.data.dao.SessionDao;
 import com.nasa.bt.server.data.dao.TempMessageDao;
-import com.nasa.bt.server.data.dao.UpdateDao;
+import com.nasa.bt.server.data.dao.UpdateRecordDao;
 import com.nasa.bt.server.data.dao.UserInfoDao;
 import com.nasa.bt.server.data.entity.UserInfoEntity;
 import com.nasa.bt.server.server.processor.DataProcessor;
@@ -18,8 +15,6 @@ import com.nasa.bt.server.server.processor.DataProcessorFactory;
 import org.apache.log4j.Logger;
 
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 客户端线程，在服务器接受了客户端之后所有事务都将交给这个类处理
@@ -39,7 +34,8 @@ public class ClientThread extends Thread {
     private SessionDao sessionDao=new SessionDao();
     private TempMessageDao tempMessageDao=new TempMessageDao();
     private UserInfoDao userInfoDao=new UserInfoDao();
-    private UpdateDao updateDao=new UpdateDao();
+
+    private PermissionChecker permissionChecker=new PermissionChecker();
 
     public ClientThread(Socket socket, ServerManager parent) {
         this.socket = socket;
@@ -124,9 +120,9 @@ public class ClientThread extends Thread {
         this.currentUser = currentUser;
         parent.addClient(this,currentUser.getId());
 
-        sessionDao.setCurrentUser(currentUser);
-        tempMessageDao.setCurrentUser(currentUser);
-        updateDao.setCurrentUser(currentUser);
+        permissionChecker.setCurrentUser(currentUser);
+        tempMessageDao.setPermissionChecker(permissionChecker);
+        sessionDao.setPermissionChecker(permissionChecker);
 
         log.info("用户 "+currentUser.getId()+" 登录成功");
     }
@@ -153,9 +149,5 @@ public class ClientThread extends Thread {
 
     public UserInfoDao getUserInfoDao() {
         return userInfoDao;
-    }
-
-    public UpdateDao getUpdateDao() {
-        return updateDao;
     }
 }

@@ -1,6 +1,7 @@
 package com.nasa.bt.server.data.dao;
 
 import com.nasa.bt.server.data.ConfigurationInstance;
+import com.nasa.bt.server.data.PermissionChecker;
 import com.nasa.bt.server.data.entity.SessionEntity;
 import com.nasa.bt.server.data.entity.UserInfoEntity;
 import org.apache.log4j.Logger;
@@ -15,7 +16,7 @@ public class SessionDao {
 
     private static final Logger log=Logger.getLogger(SessionDao.class);
     private Session session;
-    private UserInfoEntity currentUser;
+    private PermissionChecker permissionChecker;
 
     public SessionDao() {
         session= ConfigurationInstance.openSession();
@@ -39,7 +40,7 @@ public class SessionDao {
 
         SessionEntity sessionEntity= (SessionEntity) query.uniqueResult();
 
-        if(!checkSessionPermission(sessionEntity))
+        if(!permissionChecker.checkSessionReadAndWrite(sessionEntity))
             return null;
 
         return sessionEntity;
@@ -64,7 +65,7 @@ public class SessionDao {
 
     public boolean deleteSession(String sessionId){
         SessionEntity sessionEntity=session.load(SessionEntity.class,sessionId);
-        if(!checkSessionPermission(sessionEntity))
+        if(!permissionChecker.checkSessionReadAndWrite(sessionEntity))
             return false;
 
         session.beginTransaction();
@@ -87,7 +88,7 @@ public class SessionDao {
     }
 
     public boolean updateSession(SessionEntity sessionEntity){
-        if(!checkSessionPermission(sessionEntity))
+        if(!permissionChecker.checkSessionReadAndWrite(sessionEntity))
             return false;
 
         session.beginTransaction();
@@ -96,19 +97,6 @@ public class SessionDao {
         return session.getTransaction().getStatus().equals(TransactionStatus.COMMITTED);
     }
 
-    private boolean checkSessionPermission(SessionEntity sessionEntity){
-        if(sessionEntity==null || currentUser==null)
-            return false;
-
-        String currentUid=currentUser.getId();
-        if(sessionEntity.getDstUid().equals(currentUid) || sessionEntity.getSrcUid().equals(currentUid))
-            return true;
-        return false;
-    }
-
-    public void setCurrentUser(UserInfoEntity currentUser) {
-        this.currentUser = currentUser;
-    }
 
     public List<SessionEntity> getAllSession(String uid){
         Query query=session.createQuery("from SessionEntity where srcUid=?1 or dstUid=?1");
@@ -117,7 +105,7 @@ public class SessionDao {
     }
 
     public List<SessionEntity> getAllSessionExcept(String sessionIds,String uid){
-        String hql="from SessionEntity where srcUid=?1 or dstUid=?1 ";
+        String hql="from SessionEntity where (srcUid=?1 or dstUid=?1) ";
         for(int i=0;i<sessionIds.length()/36;i++){
             String subId=sessionIds.substring(i*36,(i+1)*36);
             hql+="and sessionId!='"+subId+"'";
@@ -126,5 +114,9 @@ public class SessionDao {
         query.setParameter(1,uid);
 
         return query.list();
+    }
+
+    public void setPermissionChecker(PermissionChecker permissionChecker) {
+        this.permissionChecker = permissionChecker;
     }
 }
